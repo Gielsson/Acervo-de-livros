@@ -2,12 +2,8 @@
 #include <stdlib.h>
 #include <locale.h>
 
-int mnenuPrincipal(){
-int opção;
-printf("")
 
 
-}
 int main(){
 setlocale(LC_ALL, "Portuguese");
 int mnenuPrincipal(){
