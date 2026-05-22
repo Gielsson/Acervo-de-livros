@@ -6,7 +6,7 @@
 
 int main(){
 setlocale(LC_ALL, "Portuguese");
-int mnenuPrincipal(){
+int menuPrincipal(){
 int opção; // variavel usada para guardar a opção escolhida  pelo usuário do menu
 while(opção <1 || opção > 3){
 printf("Escolha uma opção: ");
