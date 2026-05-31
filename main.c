@@ -56,6 +56,26 @@ void cadastrarLivro(livro lista[], int posicao, int id_automatico) {
     scanf("%d", &lista[posicao].quant_disp);
     printf("\nLivro cadastrado com sucesso!\n");
 }
+void cadastrarUsuario(usuario lista_usuarios[], int *tam_usuarios) {
+    // o ponteiro aponta pro total de usuarios que, no caso é a posição do usuario no vetor 
+    int posicao = *tam_usuarios; 
+    printf("\n=== CADASTRO DE NOVO USUARIO ===\n");
+    //gera a matrícula automaticamente com base na posição
+    lista_usuarios[posicao].matricula = 202600 + posicao;
+    printf("Matricula gerada automaticamente: %d\n", lista_usuarios[posicao].matricula);
+    //lê o nome completo
+    printf("Digite o nome completo: ");
+    scanf(" %[^\n]", lista_usuarios[posicao].nome);
+    //lê o curso
+    printf("Digite o curso: ");
+    scanf(" %[^\n]", lista_usuarios[posicao].curso);
+    // inicializa o contador de empréstimos do usuário zerado
+    lista_usuarios[posicao].qtd_emprestimos_ativos = 0;
+    // soma 1 na variável total_usuarios que esta sendo apontada
+    (*tam_usuarios)++;
+    printf("Usuario cadastrado com sucesso!\n");
+    printf("================================\n");
+}
 int main(){
 setlocale(LC_ALL, "Portuguese");
 livro lista_livros[100]; //espaço que guarda ate 100 fichas de livros
