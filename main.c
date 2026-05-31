@@ -39,22 +39,90 @@ void desenhaBorda(){
 void limpaTela(){ // FUNÇÃO QUE LIMPA A TELA
     system ("CLS || clear");// se for linux =cls, se wind = clear
 }
-void cadastrarLivro(livro lista[], int posicao, int id_automatico) {
-    
-    // O sistema define automaticamente o código do livro na posição atual
-    lista[posicao].codigo = id_automatico;
+int obterProximoCodigo(){ // descobre o ultimo id para gerar o proximo automaticamente
+FILE *arquivo = fopen("livros.txt", "r");
+if(arquivo == NULL){
+    return 1; // SE O ARQ n existir, o primeiro arq sera 1
+}
+livro info; // variavel para armazenar os valores na struct livro
+int ultimo_id=0;
+while (fscanf(arquivo, "%d\n", &info.codigo) !=EOF){//// Le  arquivo inteiro linha por linha. O último ID que passar por aqui será guardado.
+fscanf(arquivo, "%[^\n]s\n", info.titulo);
+fscanf(arquivo, "%[^\n]s\n", info.autor);
+fscanf(arquivo, "%d\n", &info.ano_de_publi);
+fscanf(arquivo, "%[^\n]s\n", info.genero);
+fscanf(arquivo, "%d\n", &info.quant_disp);
+fscanf(arquivo, "%d\n", &info.total_emprestimos);
+ultimo_id = info.codigo;
+}
+fclose(arquivo);
+return ultimo_id + 1; // oproximo codigo sera o ultimo + 1;
+}
+void cadastrarLivro(int id_automatico) {
+    char continuar;
+    do{
+    livro novo;
+    novo.codigo = id_automatico;
+    limpaTela();
     printf("--- CADASTRANDO LIVRO (Codigo: %d) ---\n", id_automatico);
     printf("Digite o titulo do livro: \n");
-    scanf(" %[^\n]s", lista[posicao].titulo); //%[^\n]s lê até apertar Enter
+    scanf(" %[^\n]s", novo.titulo); //%[^\n]s lê até apertar Enter
     printf("Digite o autor do livro: \n");
-    scanf(" %[^\n]s", lista[posicao].autor);
+    scanf(" %[^\n]s", novo.autor);
     printf("Digite o ano de publicacao do livro: \n");
-    scanf("%d", &lista[posicao].ano_de_publi);
+    scanf("%d", &novo.ano_de_publi);
     printf("Digite o genero do livro: \n");
-    scanf(" %[^\n]s", lista[posicao].genero);
-    printf("Digite a quantidade de livros disponiveis: \n");
-    scanf("%d", &lista[posicao].quant_disp);
+    scanf(" %[^\n]s", novo.genero);
+    printf("Digite a quantidade total de exemplares: \n");
+    scanf("%d", &novo.qtd_total);
+
+    novo.quant_disp = novo.qtd_total; // inicializando baseado na quant total
+    novo.total_emprestimos = 0;
+    FILE *arquivo = fopen("livros.txt", "a");// abre o arq em modo "a", o qual adiciona ao final
+ if (arquivo == NULL){
+    printf("Erro ao abrir o arquivo para salvar!\n");
+ }
+ fprintf(arquivo, "%d\n", novo.codigo); // gravando todos os campos da struct livro
+    fprintf(arquivo, "%s\n", novo.titulo);
+    fprintf(arquivo, "%s\n", novo.autor);
+    fprintf(arquivo, "%d\n", novo.ano_de_publi);
+    fprintf(arquivo, "%s\n", novo.genero);
+    fprintf(arquivo, "%d\n", novo.qtd_total);
+    fprintf(arquivo, "%d\n", novo.quant_disp);
+    fprintf(arquivo, "%d\n", novo.total_emprestimos);
+    fclose(arquivo);
     printf("\nLivro cadastrado com sucesso!\n");
+    printf("deseja cadastrar outro livro? (S/N)");
+    scanf(" %c", &continuar);
+    getchar(); //engole a quebra de linha 
+    if(continuar == 'S' || continuar == 's'){
+    id_automatico = obterProximoCodigo();
+    }
+    } while (continuar == 'S' || continuar == 's');
+}
+void listarLivros(){
+FILE *arquivo = fopen("livros.txt", "r");
+if(arquivo ==NULL){
+    printf(" Nenhum livro cadastrado no sistema ainda. \n");
+}
+livro info;
+printf("\n---LIVROS CADASTRADOS NO ACERVO ---\n");
+int encontrou= 0;
+while (fscanf(arquivo, "%d\n", &info.codigo) !=EOF){
+fscanf(arquivo, "%[^\n]s\n", info.autor);
+fscanf(arquivo, "%d\n", &info.ano_de_publi);
+fscanf(arquivo, "%[^\n]s\n", info.genero);
+fscanf(arquivo, "%d\n", &info.qtd_total);
+fscanf(arquivo, "%d\n", &info.quant_disp);
+fscanf(arquivo, "%d\n", &info.total_emprestimos);
+printf("Codigo: %-3d | Titulo:%-30s | Autor: %-20s | Quantidade total: %d\n", info.codigo,info.titulo, info.autor, info.qtd_total);
+encontrou =1;
+    
+} if (!encontrou){
+    printf("O arquivo esta vazio. \n");
+}
+fclose(arquivo);
+}
 }
 void cadastrarUsuario(usuario lista_usuarios[], int *tam_usuarios) {
     // o ponteiro aponta pro total de usuarios que, no caso é a posição do usuario no vetor 
@@ -78,9 +146,7 @@ void cadastrarUsuario(usuario lista_usuarios[], int *tam_usuarios) {
 }
 int main(){
 setlocale(LC_ALL, "Portuguese");
-livro lista_livros[100]; //espaço que guarda ate 100 fichas de livros
-int total_livros = 0;    // Cont de livros cadastrados (começa em 0)
-int proximo_codigo = 1;  // guarda o  próximo id (começa em 1)
+
 int opcao; // variavel usada para guardar a opção escolhida  pelo usuário do menu
 do{
      limpaTela();
@@ -97,15 +163,11 @@ printf("Escolha uma opção: ");
 scanf("%d", &opcao);
 //resultado de acordo com a opção escolhida.
 switch(opcao){
-    case 1:
-    if (total_livros < 100) {
-       cadastrarLivro(lista_livros, total_livros, proximo_codigo);
-     total_livros++;    // Avança para o próxima espaço do armário
-    proximo_codigo++;  // Aumenta o número do ID para o próximo livro
-   } else {
-     printf("Erro: Limite de 100 livros atingido!\n");
+    case 1: { //Descobre o próximo ID automaticamente dentro do arquivo e cadastra
+    int proximo_codigo = obterProximoCodigo();
+    cadastrarLivro(proximo_codigo);
+break;
 }
-    break;
     case 2:
     do{
     	   limpaTela();
@@ -143,7 +205,8 @@ switch(opcao){
 		printf("opção 4 escolhida");
 		break;
 		case 5:
-		printf("opção 5 escolhida");
+			  listarLivros();
+	  listarLivros();
 		break;
 		case 6:
 		printf("opção 6 escolhida");
