@@ -107,7 +107,50 @@ switch(opcao){
 }
     break;
     case 2:
-    printf("opção 2 foi escolhida\n");
+    do{
+    	   limpaTela();
+           desenhaBorda();
+		   printf("\n   GERENCIAMENTO DE USUÁRIOS   \n");
+		   desenhaBorda();
+		   printf("\n [1] - Cadastrar usuários ");
+		   printf("\n [2] - Listar Usuários");
+		   printf("\n [3] - Buscar usuários ");
+		   printf("\n [4] - Atualizar dados");
+		   printf("\n [5] - Remover usuários \n");
+		   printf(" [6] -❌ Sair \n");
+		   printf("Escolha uma opção: ");
+		   scanf("%d", &opcao2);
+		   //resultado de acordo com a opção escolhida.
+		
+		   switch (opcao2) {
+		    case 1: 
+		    if (total_usuarios<1000) {
+        
+        cadastrarUsuario(vetor_usuarios, &total_usuarios);
+        
+        }else {
+    
+        printf("Erro: limite de usuarios atingidos!");
+		}
+		break;
+		case 2:
+		printf("opção 2 escolhida");
+		break;
+		case 3:
+		printf("opção 3 escolhida");
+		break;
+		case 4:
+		printf("opção 4 escolhida");
+		break;
+		case 5:
+		printf("opção 5 escolhida");
+		break;
+		case 6:
+		printf("opção 6 escolhida");
+		break;
+		   }
+		}
+		while (opcao2 != 6);// enquanto o usuario nao optar por sair do menu secundario ele vai se repetir
     break;
     case 3:
     printf("opção 3 foi escolhida\n");
