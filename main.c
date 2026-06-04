@@ -47,10 +47,10 @@ if(arquivo == NULL){
 livro info; // variavel para armazenar os valores na struct livro
 int ultimo_id=0;
 while (fscanf(arquivo, "%d\n", &info.codigo) !=EOF){//// Le  arquivo inteiro linha por linha. O último ID que passar por aqui será guardado.
-fscanf(arquivo, "%[^\n]s\n", info.titulo);
-fscanf(arquivo, "%[^\n]s\n", info.autor);
+fscanf(arquivo, "%[^\n]\n", info.titulo);
+fscanf(arquivo, "%[^\n]\n", info.autor);
 fscanf(arquivo, "%d\n", &info.ano_de_publi);
-fscanf(arquivo, "%[^\n]s\n", info.genero);
+fscanf(arquivo, "%[^\n]\n", info.genero);
 fscanf(arquivo, "%d\n", &info.quant_disp);
 fscanf(arquivo, "%d\n", &info.total_emprestimos);
 ultimo_id = info.codigo;
