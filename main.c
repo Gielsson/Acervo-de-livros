@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 #include <locale.h>
 
 
@@ -33,7 +35,7 @@ struct emprestimo{
 }; typedef struct emprestimo emprestimo;
 
 void desenhaBorda(){ 
-     printf("📖========================📖 \n");//função que desenha borda
+     printf("=========================== \n");//função que desenha borda
 
 }
 void limpaTela(){ // FUNÇÃO QUE LIMPA A TELA
@@ -51,6 +53,7 @@ fscanf(arquivo, "%[^\n]\n", info.titulo);
 fscanf(arquivo, "%[^\n]\n", info.autor);
 fscanf(arquivo, "%d\n", &info.ano_de_publi);
 fscanf(arquivo, "%[^\n]\n", info.genero);
+fscanf(arquivo, "%d\n", &info.qtd_total);
 fscanf(arquivo, "%d\n", &info.quant_disp);
 fscanf(arquivo, "%d\n", &info.total_emprestimos);
 ultimo_id = info.codigo;
@@ -66,18 +69,43 @@ void cadastrarLivro(int id_automatico) {
     limpaTela();
     printf("--- CADASTRANDO LIVRO (Codigo: %d) ---\n", id_automatico);
     printf("Digite o titulo do livro: \n");
-    scanf(" %[^\n]s", novo.titulo); //%[^\n]s lê até apertar Enter
+    scanf(" %[^\n]", novo.titulo); //%[^\n]s lê até apertar Enter
     printf("Digite o autor do livro: \n");
-    scanf(" %[^\n]s", novo.autor);
+    scanf(" %[^\n]", novo.autor);
     printf("Digite o ano de publicacao do livro: \n");
-    scanf("%d", &novo.ano_de_publi);
+    while(scanf("%d", &novo.ano_de_publi)!=1){
+        printf("\n ERRO: Ano invalido! Digite apenas numeros.\n");
+        while(getchar() !='n'); //limpa buffer (letra que ficou traavdano teclado)
+        printf("Digite o ano de publicacao do livro novamente: \n");
+    }
+    getchar(); 
+    int genero_valido;
+        do {
+            genero_valido =1; // ja cmeça sasumindo que esta correto
     printf("Digite o genero do livro: \n");
-    scanf(" %[^\n]s", novo.genero);
+    scanf(" %[^\n]", novo.genero);
+    // Varre o texto usando a Tabela ASCII para achar números
+    
+    for (int i = 0; novo.genero[i] != '\0'; i++) {
+     if (novo.genero[i] >= '0' && novo.genero[i] <= '9') {
+    genero_valido = 0; // Se achou número, invalida
+    break;
+     }
+    } if (genero_valido == 0) {
+                printf("\n⚠️ Erro: Genero invalido! Nao use numeros.\n");
+            }
+        } while (genero_valido == 0); // Só repete se for inválido
+        //validando a quantidade total
     printf("Digite a quantidade total de exemplares: \n");
-    scanf("%d", &novo.qtd_total);
-
+   while (scanf("%d", &novo.qtd_total) !=1 ||novo.qtd_total <0){
+printf("\n⚠️ Erro: Quantidade invalida! Digite um numero maior ou igual a 0.\n");
+while (getchar() != '\n'); // Limpa o buffer
+printf("Digite a quantidade total de exemplares novamente: \n");
+   }
+getchar();
     novo.quant_disp = novo.qtd_total; // inicializando baseado na quant total
     novo.total_emprestimos = 0;
+    //gravando no arquivo
     FILE *arquivo = fopen("livros.txt", "a");// abre o arq em modo "a", o qual adiciona ao final
  if (arquivo == NULL){
     printf("Erro ao abrir o arquivo para salvar!\n");
@@ -95,10 +123,12 @@ void cadastrarLivro(int id_automatico) {
     printf("deseja cadastrar outro livro? (S/N)");
     scanf(" %c", &continuar);
     getchar(); //engole a quebra de linha 
-    if(continuar == 'S' || continuar == 's'){
+    continuar = tolower(continuar);
+    
+    if(continuar == 's'){
     id_automatico = obterProximoCodigo();
     }
-    } while (continuar == 'S' || continuar == 's');
+    } while (continuar == 's');
 }
 void listarLivros(){
 FILE *arquivo = fopen("livros.txt", "r");
@@ -108,21 +138,27 @@ if(arquivo ==NULL){
 livro info;
 printf("\n---LIVROS CADASTRADOS NO ACERVO ---\n");
 int encontrou= 0;
+
 while (fscanf(arquivo, "%d\n", &info.codigo) !=EOF){
-fscanf(arquivo, "%[^\n]s\n", info.autor);
+fscanf(arquivo, "%[^\n]\n", info.titulo);
+fscanf(arquivo, "%[^\n]\n", info.autor);
 fscanf(arquivo, "%d\n", &info.ano_de_publi);
-fscanf(arquivo, "%[^\n]s\n", info.genero);
+fscanf(arquivo, "%[^\n]\n", info.genero);
 fscanf(arquivo, "%d\n", &info.qtd_total);
 fscanf(arquivo, "%d\n", &info.quant_disp);
 fscanf(arquivo, "%d\n", &info.total_emprestimos);
-printf("Codigo: %-3d | Titulo:%-30s | Autor: %-20s | Quantidade total: %d\n", info.codigo,info.titulo, info.autor, info.qtd_total);
+
+printf("Codigo: %d\n", info.codigo);
+  printf("Titulo: %s\n", info.titulo);
+ printf("Autor: %s\n", info.autor);
+ printf("Quantidade total: %d\n", info.qtd_total);
+printf("------------------------------------\n");
 encontrou =1;
     
 } if (!encontrou){
     printf("O arquivo esta vazio. \n");
 }
 fclose(arquivo);
-}
 }
 void cadastrarUsuario(usuario lista_usuarios[], int *tam_usuarios) {
     // o ponteiro aponta pro total de usuarios que, no caso é a posição do usuario no vetor 
@@ -146,28 +182,65 @@ void cadastrarUsuario(usuario lista_usuarios[], int *tam_usuarios) {
 }
 int main(){
 setlocale(LC_ALL, "Portuguese");
-
-int opcao; // variavel usada para guardar a opção escolhida  pelo usuário do menu
+usuario vetor_usuarios[1000];
+    int total_usuarios = 0;
+int opcao, opcao2,opcaoSecundar; // variavel usada para guardar a opção escolhida  pelo usuário do menu
 do{
      limpaTela();
     desenhaBorda();
-    printf("\n📚     ACERVO DE LIVROS   📚\n");
+    printf("\n     ACERVO DE LIVROS   \n");
     desenhaBorda();
-printf("\n [1] -📘 Gerenciar Livros ");
-printf("\n [2] -👥 Gerenciar Usuários");
-printf("\n [3] -🤝 Realizar Empréstimo ");
-printf("\n [4] -↩️ Registrar Devolução ");
-printf("\n [5] -📊 Relatórios \n");
-printf(" [6] -❌ Sair \n");
-printf("Escolha uma opção: ");
+printf("\n [1] - Gerenciar Livros ");
+printf("\n [2] - Gerenciar Usuarios");
+printf("\n [3] - Realizar Emprestimo ");
+printf("\n [4] - Registrar Devolucao ");
+printf("\n [5] - Relatorios \n");
+printf(" [6] - Sair \n");
+printf("Escolha uma opcao: ");
 scanf("%d", &opcao);
 //resultado de acordo com a opção escolhida.
 switch(opcao){
-    case 1: { //Descobre o próximo ID automaticamente dentro do arquivo e cadastra
-    int proximo_codigo = obterProximoCodigo();
-    cadastrarLivro(proximo_codigo);
-break;
-}
+    case 1:
+    do {
+                    limpaTela();
+                        desenhaBorda();
+                    printf("\n  GERENCIAMENTO DE LIVROS   \n");
+                         desenhaBorda();
+                    printf("\n [1] - Cadastrar livro");
+                    printf("\n [2] - Listar livros");
+                    printf("\n [3] - Buscar livro");
+                    printf("\n [4] - Voltar ao Menu Principal\n");
+                    printf("Escolha uma opção: ");
+                    scanf("%d", &opcaoSecundar);
+                    getchar();
+                    switch(opcaoSecundar) {
+    case 1: {
+                            int proximo_codigo = obterProximoCodigo();
+                            cadastrarLivro(proximo_codigo);
+                            break;
+                        }
+    case 2:
+                            limpaTela();
+                            listarLivros();
+                            printf("\nPressione Enter para voltar...");
+                            getchar(); // Pausa para o usuário ler
+                            break;
+    case 3:
+                            printf("\nFunção de busca blablabla.\n");
+                            printf("Pressione Enter para voltar...");
+                            getchar();
+                            break;
+     case 4:
+                            break;
+                        default:
+                            printf("\nOpção inválida!\n");
+                            printf("Pressione Enter para tentar novamente...");
+                            getchar();
+                            break;
+                    }
+                } while(opcaoSecundar != 4);
+                break;
+
     case 2:
     do{
     	   limpaTela();
@@ -182,6 +255,7 @@ break;
 		   printf(" [6] -❌ Sair \n");
 		   printf("Escolha uma opção: ");
 		   scanf("%d", &opcao2);
+           getchar();
 		   //resultado de acordo com a opção escolhida.
 		
 		   switch (opcao2) {
@@ -231,7 +305,7 @@ break;
     printf("opção invalida\n");
     break;
 }
-}while (opcao != 6); // O programa continua rodando ATÉ o usuário digitar 6
+} while (opcao != 6); // O programa continua rodando ATÉ o usuário digitar 6
 
 return 0;
 }
