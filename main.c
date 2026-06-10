@@ -3,6 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <locale.h>
+#include <time.h>
 
 
 struct livro{
@@ -130,14 +131,29 @@ getchar();
     }
     } while (continuar == 's');
 }
+// Lê um livro inteiro do arquivo e retorna dado se conseguiu, 0 se chegou no fim.
+livro lerLivro(FILE *arq) {
+    livro dado;
+    fscanf(arq, "%d\n",     &dado.codigo);
+    fscanf(arq, "%[^\n]\n", dado.titulo);
+    fscanf(arq, "%[^\n]\n", dado.autor);
+    fscanf(arq, "%d\n",     &dado.ano_de_publi);
+    fscanf(arq, "%[^\n]\n", dado.genero);
+    fscanf(arq, "%d\n",     &dado.qtd_total);
+    fscanf(arq, "%d\n",     &dado.quant_disp);
+    fscanf(arq, "%d\n",     &dado.total_emprestimos);
+    return dado;
+}
 void listarLivros(){
 FILE *arquivo = fopen("livros.txt", "r");
 if(arquivo ==NULL){
     printf(" Nenhum livro cadastrado no sistema ainda. \n");
+return;
 }
 livro info;
-printf("\n---LIVROS CADASTRADOS NO ACERVO ---\n");
 int encontrou= 0;
+printf("\n---LIVROS CADASTRADOS NO ACERVO ---\n");
+
 
 while (fscanf(arquivo, "%d\n", &info.codigo) !=EOF){
 fscanf(arquivo, "%[^\n]\n", info.titulo);
@@ -159,7 +175,105 @@ encontrou =1;
     printf("O arquivo esta vazio. \n");
 }
 fclose(arquivo);
+} 
+void buscarLivro() {
+    FILE *arquivo = fopen("livros.txt", "r");
+    if (arquivo == NULL) {
+        printf("\n❌ Nenhum livro cadastrado no sistema ainda.\n");
+        return;
+    }
+
+    limpaTela();
+    desenhaBorda();
+    printf("\n🔍 BUSCAR LIVRO NO ACERVO 🔍\n");
+    desenhaBorda();
+
+    int tipo_busca;
+    printf("[1] Buscar por Codigo\n");
+    printf("[2] Buscar por Titulo\n");
+    printf("Escolha o tipo de busca: ");
+    scanf("%d", &tipo_busca);
+    getchar(); // Limpa o buffer
+
+    int cod_busca = -1; // começa com -1 pois ainda nao foi digitado nenhum codigo
+    char termo_busca[250] = "";
+
+    if (tipo_busca == 1) {
+        printf("Digite o codigo do livro: ");
+        scanf("%d", &cod_busca);
+        getchar();
+    } else if (tipo_busca == 2) {
+        printf("Digite o titulo (ou parte dele): ");
+        scanf(" %[^\n]", termo_busca);
+        getchar();
+        
+        // Coloca tudo em letra minuscula para a busca nao diferenciar maiuscula de minuscula
+        for(int i = 0; termo_busca[i]; i++) {
+            termo_busca[i] = tolower(termo_busca[i]);
+        }
+    } else {
+        printf("\n❌ Opcao invalida!\n");
+        fclose(arquivo);
+        return;
+    }
+
+    livro info;
+    int encontrou = 0; // controla se achou algum livro ou nao
+
+     // Fica lendo livro por livro do arquivo ate chegar no final
+    while (fscanf(arquivo, "%d\n", &info.codigo) != EOF) {
+        fscanf(arquivo, "%[^\n]\n", info.titulo);
+        fscanf(arquivo, "%[^\n]\n", info.autor);
+        fscanf(arquivo, "%d\n", &info.ano_de_publi);
+        fscanf(arquivo, "%[^\n]\n", info.genero);
+        fscanf(arquivo, "%d\n", &info.qtd_total);
+        fscanf(arquivo, "%d\n", &info.quant_disp);
+        fscanf(arquivo, "%d\n", &info.total_emprestimos);
+
+        int corresponde = 0;  // verfica se esse livro bate com o que o usuario procurou
+
+        if (tipo_busca == 1 && info.codigo == cod_busca) {
+            // achou o livro pelo codigo
+             corresponde = 1;
+        } else if (tipo_busca == 2) {
+           // coloca o titulo do livro em minusculo tambem para comparar
+            char titulo_minusculo[250];
+            strcpy(titulo_minusculo, info.titulo);
+            for(int i = 0; titulo_minusculo[i]; i++) {
+                titulo_minusculo[i] = tolower(titulo_minusculo[i]);
+            }
+
+            // strstr verifica se o que o usuario digitou esta dentro do titulo
+            if (strstr(titulo_minusculo, termo_busca) != NULL) {
+                corresponde = 1;
+            }
+        }
+
+        if (corresponde) {
+            if (!encontrou) {
+                printf("\n📖 --- LIVRO(S) ENCONTRADO(S) ---\n");
+            }
+            // mostra os dados do livro encontrado
+            printf("Codigo: %d\n", info.codigo);
+            printf("Titulo: %s\n", info.titulo);
+            printf("Autor: %s\n", info.autor);
+            printf("Genero: %s\n", info.genero);
+            printf("Ano: %d\n", info.ano_de_publi);
+            printf("Disponivel: %d/%d\n", info.quant_disp, info.qtd_total);
+            printf("------------------------------------\n");
+            encontrou = 1;
+            // se achou pelo codigo nao precisa continuar procurando
+            if (tipo_busca == 1) break; // Se buscou por ID único, pode parar o loop
+        }
+    }
+
+    if (!encontrou) {
+        printf("\n❌ Nenhum livro correspondente foi encontrado.\n");
+    }
+
+    fclose(arquivo);
 }
+// insere novo perfil
 void cadastrarUsuario(usuario lista_usuarios[], int *tam_usuarios) {
     // o ponteiro aponta pro total de usuarios que, no caso é a posição do usuario no vetor 
     int posicao = *tam_usuarios; 
@@ -537,13 +651,13 @@ switch(opcao){
            desenhaBorda();
 		   printf("\n   GERENCIAMENTO DE USUÁRIOS   \n");
 		   desenhaBorda();
-		   printf("\n [1] - Cadastrar usuários ");
-		   printf("\n [2] - Listar Usuários");
-		   printf("\n [3] - Buscar usuários ");
+		   printf("\n [1] - Cadastrar usuarios ");
+		   printf("\n [2] - Listar Usua21rios");
+		   printf("\n [3] - Buscar usuarios ");
 		   printf("\n [4] - Atualizar dados");
-		   printf("\n [5] - Remover usuários \n");
-		   printf(" [6] -❌ Sair \n");
-		   printf("Escolha uma opção: ");
+		   printf("\n [5] - Remover usuarios \n");
+		   printf(" [6] - Sair \n");
+		   printf("Escolha uma opcao: ");
 		   scanf("%d", &opcao2);
            getchar();
 		   //resultado de acordo com a opção escolhida.
