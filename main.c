@@ -359,13 +359,13 @@ fclose(arquivo);
 void ListarUsuarios(usuario lista_usuarios[], int tam_usuarios){
 
     limpaTela();
-    printf("\n=== USUARIOS CADASTRADO ===\n")
+    printf("\n=== USUARIOS CADASTRADO ===\n");
 
     for(int i=0;i < tam_usuarios;i++){
-        Printf("Nome: %s\n", lista_usuarios[i].nome);
+        printf("Nome: %s\n", lista_usuarios[i].nome);
         printf("Curso: %s\n", lista_usuarios[i].curso);
         printf("Matricula: %d\n", &lista_usuarios[i].matricula);
-        printf("Emprestimos ativos: %d\n", lista_usuarios[i]qtd_emprestimos_ativos;);
+        printf("Emprestimos ativos: %d\n", lista_usuarios[i].qtd_emprestimos_ativos);
 
     }
 
@@ -665,7 +665,7 @@ int main(){
 setlocale(LC_ALL, "Portuguese");
 usuario vetor_usuarios[1000];
     int total_usuarios = 0;
-	LerUsuarios(vetor_usuarios, total_usuarios);
+	LerUsuarios(vetor_usuarios, &total_usuarios);
 int opcao, opcao2,opcaoSecundar; // variavel usada para guardar a opção escolhida  pelo usuário do menu
 do{
      limpaTela();
@@ -753,7 +753,7 @@ switch(opcao){
 		break;
 		case 2:
 		ListarUsuarios(vetor_usuarios, total_usuarios);
-			DesenhaBorda();
+			desenhaBorda();
 			printf("Digite enter pra voltar.");
 			getchar();
 		break;
