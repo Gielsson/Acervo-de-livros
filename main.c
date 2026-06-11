@@ -730,7 +730,7 @@ switch(opcao){
 		   printf("\n   GERENCIAMENTO DE USUÁRIOS   \n");
 		   desenhaBorda();
 		   printf("\n [1] - Cadastrar usuarios ");
-		   printf("\n [2] - Listar Usua21rios");
+		   printf("\n [2] - Listar usuarios");
 		   printf("\n [3] - Buscar usuarios ");
 		   printf("\n [4] - Atualizar dados");
 		   printf("\n [5] - Remover usuarios \n");
