@@ -366,7 +366,7 @@ void ListarUsuarios(usuario lista_usuarios[], int tam_usuarios){
         printf("Curso: %s\n", lista_usuarios[i].curso);
         printf("Matricula: %d\n", &lista_usuarios[i].matricula);
         printf("Emprestimos ativos: %d\n", lista_usuarios[i].qtd_emprestimos_ativos);
-
+desenhaBorda();
     }
 
     
@@ -727,7 +727,7 @@ switch(opcao){
     do{
     	   limpaTela();
            desenhaBorda();
-		   printf("\n   GERENCIAMENTO DE USUÁRIOS   \n");
+		   printf("\n   GERENCIAMENTO DE USUARIOS   \n");
 		   desenhaBorda();
 		   printf("\n [1] - Cadastrar usuarios ");
 		   printf("\n [2] - Listar usuarios");
@@ -753,7 +753,6 @@ switch(opcao){
 		break;
 		case 2:
 		ListarUsuarios(vetor_usuarios, total_usuarios);
-			desenhaBorda();
 			printf("Digite enter pra voltar.");
 			getchar();
 		break;
