@@ -273,14 +273,61 @@ void buscarLivro() {
 
     fclose(arquivo);
 }
+//função pra ler os usuarios
+void LerUsuarios(usuario lista_usuarios[], int *tam_usuarios){
+    FILE *arquivo = fopen("usuarios.txt", "r");
+
+    if(arquivo == NULL){
+        return;
+    }
+
+    while(fscanf(arquivo, "%d\n",
+           &lista_usuarios[*tam_usuarios].matricula) != EOF){
+
+        fscanf(arquivo, "%[^\n]\n",
+               lista_usuarios[*tam_usuarios].nome);
+
+        fscanf(arquivo, "%[^\n]\n",
+               lista_usuarios[*tam_usuarios].curso);
+
+        fscanf(arquivo, "%d\n",
+               &lista_usuarios[*tam_usuarios].qtd_emprestimos_ativos);
+
+        (*tam_usuarios)++;
+    }
+
+    fclose(arquivo);
+}
+int obterProximaMatricula(){
+    FILE *arquivo = fopen("usuarios.txt", "r");
+
+    if(arquivo == NULL){
+        return 202600;
+    }
+
+    usuario info;
+    int ultimaMatricula = 202599;
+
+    while(fscanf(arquivo, "%d\n", &info.matricula) != EOF){
+        fscanf(arquivo, "%[^\n]\n", info.nome);
+        fscanf(arquivo, "%[^\n]\n", info.curso);
+        fscanf(arquivo, "%d\n", &info.qtd_emprestimos_ativos);
+
+        ultimaMatricula = info.matricula;
+    }
+
+    fclose(arquivo);
+
+    return ultimaMatricula + 1;
+}
 // insere novo perfil
 void cadastrarUsuario(usuario lista_usuarios[], int *tam_usuarios) {
     // o ponteiro aponta pro total de usuarios que, no caso é a posição do usuario no vetor 
     int posicao = *tam_usuarios; 
     printf("\n=== CADASTRO DE NOVO USUARIO ===\n");
     //gera a matrícula automaticamente com base na posição
-    lista_usuarios[posicao].matricula = 202600 + posicao;
-    printf("Matricula gerada automaticamente: %d\n", lista_usuarios[posicao].matricula);
+    lista_usuarios[posicao].matricula = obterProximaMatricula();
+    printf("Matricula gerada: %d\n", lista_usuarios[posicao].matricula);
     //lê o nome completo
     printf("Digite o nome completo: ");
     scanf(" %[^\n]", lista_usuarios[posicao].nome);
@@ -290,9 +337,39 @@ void cadastrarUsuario(usuario lista_usuarios[], int *tam_usuarios) {
     // inicializa o contador de empréstimos do usuário zerado
     lista_usuarios[posicao].qtd_emprestimos_ativos = 0;
     // soma 1 na variável total_usuarios que esta sendo apontada
-    (*tam_usuarios)++;
+   
+
+    FILE *arquivo = fopen("usuarios.txt", "a");
+
+if(arquivo == NULL){
+    printf("Erro ao abrir arquivo!\n");
+    return;
+}
+
+fprintf(arquivo, "%d\n", lista_usuarios[posicao].matricula);
+fprintf(arquivo, "%s\n", lista_usuarios[posicao].nome);
+fprintf(arquivo, "%s\n", lista_usuarios[posicao].curso);
+fprintf(arquivo, "%d\n", lista_usuarios[posicao].qtd_emprestimos_ativos);
+
+fclose(arquivo);
     printf("Usuario cadastrado com sucesso!\n");
     printf("================================\n");
+     (*tam_usuarios)++;
+}
+void ListarUsuarios(usuario lista_usuarios[], int tam_usuarios){
+
+    limpaTela();
+    printf("\n=== USUARIOS CADASTRADO ===\n")
+
+    for(int i=0;i < tam_usuarios;i++){
+        Printf("Nome: %s\n", lista_usuarios[i].nome);
+        printf("Curso: %s\n", lista_usuarios[i].curso);
+        printf("Matricula: %d\n", &lista_usuarios[i].matricula);
+        printf("Emprestimos ativos: %d\n", lista_usuarios[i]qtd_emprestimos_ativos;);
+
+    }
+
+    
 }
 void realizarEmprestimo(usuario lista_usuarios[], int tam_usuarios, emprestimo lista_emprestimos[], int *tam_emprestimos);
 void realizarDevolucao(usuario lista_usuarios[], int tam_usuarios, livro lista_livros[], int tam_livros, emprestimo lista_emprestimos[], int tam_emprestimos);
@@ -588,6 +665,7 @@ int main(){
 setlocale(LC_ALL, "Portuguese");
 usuario vetor_usuarios[1000];
     int total_usuarios = 0;
+	LerUsuarios(vetor_usuarios, total_usuarios);
 int opcao, opcao2,opcaoSecundar; // variavel usada para guardar a opção escolhida  pelo usuário do menu
 do{
      limpaTela();
@@ -674,7 +752,10 @@ switch(opcao){
 		}
 		break;
 		case 2:
-		printf("opção 2 escolhida");
+		ListarUsuarios(vetor_usuarios, total_usuarios);
+			DesenhaBorda();
+			printf("Digite enter pra voltar.");
+			getchar();
 		break;
 		case 3:
 		printf("opção 3 escolhida");
