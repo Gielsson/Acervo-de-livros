@@ -742,6 +742,7 @@ switch(opcao){
 		
 		   switch (opcao2) {
 		    case 1: 
+				limpaTela();
 		    if (total_usuarios<1000) {
         
         cadastrarUsuario(vetor_usuarios, &total_usuarios);
@@ -752,6 +753,7 @@ switch(opcao){
 		}
 		break;
 		case 2:
+			limpaTela();
 		ListarUsuarios(vetor_usuarios, total_usuarios);
 			printf("Digite enter pra voltar.");
 			getchar();
