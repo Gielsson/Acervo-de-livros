@@ -561,79 +561,99 @@ void LerUsuarios(usuario lista_usuarios[], int *tam_usuarios){
     if(arquivo == NULL){
         return;
     }
-// lê enquanto houver registros; *tam_usuarios vai de 0 até o fim do arquivo
+
     while(fscanf(arquivo, "%d\n", &lista_usuarios[*tam_usuarios].matricula) != EOF){
-		fscanf(arquivo, "%[^\n]\n", lista_usuarios[*tam_usuarios].nome);
-		fscanf(arquivo, "%[^\n]\n", lista_usuarios[*tam_usuarios].curso);
-		fscanf(arquivo, "%d\n", &lista_usuarios[*tam_usuarios].qtd_emprestimos_ativos);
-		 (*tam_usuarios)++;  // avança para a próxima posição livre do vetor
+        fscanf(arquivo, "%[^\n]\n",
+               lista_usuarios[*tam_usuarios].nome);
+        fscanf(arquivo, "%[^\n]\n",
+               lista_usuarios[*tam_usuarios].curso);
+        fscanf(arquivo, "%d\n",
+               &lista_usuarios[*tam_usuarios].qtd_emprestimos_ativos);
+            (*tam_usuarios)++;
     }
 
     fclose(arquivo);
+
 }
 int obterProximaMatricula(){
     FILE *arquivo = fopen("usuarios.txt", "r");
-	 if(arquivo == NULL){ // arquivo vazio- primeira matrícula do sistema
+
+    if(arquivo == NULL){
         return 202600;
     }
 
     usuario info;
-    int ultimaMatricula = 202599;// valor base: uma abaixo da primeira matrícula
-	
- // percorre o arquivo inteiro guardando sempre a última matrícula lida
+    int ultimaMatricula = 202599;
+
     while(fscanf(arquivo, "%d\n", &info.matricula) != EOF){
         fscanf(arquivo, "%[^\n]\n", info.nome);
         fscanf(arquivo, "%[^\n]\n", info.curso);
         fscanf(arquivo, "%d\n", &info.qtd_emprestimos_ativos);
-		 ultimaMatricula = info.matricula;
+
+        ultimaMatricula = info.matricula;
     }
 
     fclose(arquivo);
-	return ultimaMatricula + 1;
+
+    return ultimaMatricula + 1;
 }
 // insere novo perfil
 void cadastrarUsuario(usuario lista_usuarios[], int *tam_usuarios) {
-    // o ponteiro aponta pro total de usuarios que, no caso é a posição do usuario no vetor 
-    int posicao = *tam_usuarios; // próxima posição livre no vetor (0, 1, 2...)
-	 limpaTela();
-    printf("\n=== CADASTRO DE NOVO USUARIO ===\n");
-    //gera a matrícula automaticamente — o usuário não digita
-    lista_usuarios[posicao].matricula = obterProximaMatricula();
-    printf("Matricula gerada: %d\n", lista_usuarios[posicao].matricula);
-    //lê o nome completo
-    printf("Digite o nome completo: ");
-    scanf(" %[^\n]", lista_usuarios[posicao].nome);
-    //lê o curso
-    printf("Digite o curso: ");
-    scanf(" %[^\n]", lista_usuarios[posicao].curso);
-	
-    lista_usuarios[posicao].qtd_emprestimos_ativos = 0;// novo usuário começa sem empréstimos
-    // soma 1 na variável total_usuarios que esta sendo apontada
-   
- // grava no arquivo em modo append (não apaga os já existentes)
-    FILE *arquivo = fopen("usuarios.txt", "a");
-if(arquivo == NULL){
-    printf("Erro ao abrir arquivo!\n");
-    return;
-}
+    char continuar;
 
-fprintf(arquivo, "%d\n", lista_usuarios[posicao].matricula);
-fprintf(arquivo, "%s\n", lista_usuarios[posicao].nome);
-fprintf(arquivo, "%s\n", lista_usuarios[posicao].curso);
-fprintf(arquivo, "%d\n", lista_usuarios[posicao].qtd_emprestimos_ativos);
+    do {
+        if (*tam_usuarios >= 1000) {
+            printf("\n❌ Erro: Limite de 1000 usuarios atingido!\n");
+            return;
+        }
 
-fclose(arquivo);
-    printf("Usuario cadastrado com sucesso!\n");
-    printf("================================\n");
-     (*tam_usuarios)++; // só incrementa depois de gravar com sucesso
+        int posicao = *tam_usuarios; 
+        printf("\n=== CADASTRO DE NOVO USUARIO ===\n");
+        
+        // salva os dados na estrutura dentro do VETOR (Memória RAM)
+        lista_usuarios[posicao].matricula = obterProximaMatricula();
+        printf("Matricula gerada: %d\n", lista_usuarios[posicao].matricula);
+        
+        printf("Digite o nome completo: ");
+        scanf(" %[^\n]", lista_usuarios[posicao].nome);
+        getchar();
+        
+        printf("Digite o curso: ");
+        scanf(" %[^\n]", lista_usuarios[posicao].curso);
+        getchar();
+        
+        lista_usuarios[posicao].qtd_emprestimos_ativos = 0;
+
+        // abre o arquivo para anexar o novo usuário
+        FILE *arquivo = fopen("usuarios.txt", "a");
+        if (arquivo == NULL) {
+            printf("Erro ao abrir arquivo!\n");
+            return;
+        }
+
+        fprintf(arquivo, "%d\n", lista_usuarios[posicao].matricula);
+        fprintf(arquivo, "%s\n", lista_usuarios[posicao].nome);
+        fprintf(arquivo, "%s\n", lista_usuarios[posicao].curso);
+        fprintf(arquivo, "%d\n", lista_usuarios[posicao].qtd_emprestimos_ativos);
+        fclose(arquivo);
+
+        printf("Usuario cadastrado com sucesso!\n");
+        printf("================================\n");
+        
+        // atualiza o contador geral da main
+        (*tam_usuarios)++;
+
+        printf("\nDeseja continuar cadastrando? (S/N): ");
+        scanf(" %c", &continuar);
+        getchar();
+        continuar = tolower(continuar);
+
+    } while(continuar == 's'); 
 }
 void ListarUsuarios(usuario lista_usuarios[], int tam_usuarios){
 
     limpaTela();
-    printf("\n=== USUARIOS CADASTRADO ===\n");
-	  if (total == 0) {
-        printf("Nenhum usuario cadastrado ainda.\n");
-        return;
+    printf("\n=== USUARIOS CADASTRADOS ===\n");
 
     for(int i=0;i < tam_usuarios;i++){
         printf("Nome: %s\n", lista_usuarios[i].nome);
@@ -641,8 +661,248 @@ void ListarUsuarios(usuario lista_usuarios[], int tam_usuarios){
         printf("Matricula: %d\n", lista_usuarios[i].matricula);
         printf("Emprestimos ativos: %d\n", lista_usuarios[i].qtd_emprestimos_ativos);
 desenhaBorda();
-    } 
+    }
+
+    
 }
+void buscarUsuario(usuario lista_usuarios[], int tam_usuarios) {
+    limpaTela();
+    desenhaBorda();
+    printf("\n BUSCAR USUARIO NO SISTEMA \n");
+    desenhaBorda();
+
+    if (tam_usuarios == 0) {
+        printf("\n❌ Nenhum usuario cadastrado no sistema ate o momento.\n");
+        return;
+    }
+
+    int tipo_busca;
+    printf("[1] Buscar por Matricula\n");
+    printf("[2] Buscar por Nome\n");
+    printf("Escolha o tipo de busca: ");
+    scanf("%d", &tipo_busca);
+    getchar(); // limpa o buffer
+
+    int mat_busca = -1;
+    char termo_busca[250] = "";
+
+    if (tipo_busca == 1) {
+        printf("Digite a matricula do usuario: ");
+        scanf("%d", &mat_busca);
+        getchar();
+    } else if (tipo_busca == 2) {
+        printf("Digite o nome (ou parte dele): ");
+        scanf(" %[^\n]", termo_busca);
+        getchar();
+        
+        // coloca o termo buscado em minúsculo para busca insensível a maiúsculas
+        for(int i = 0; termo_busca[i]; i++) {
+            termo_busca[i] = tolower(termo_busca[i]);
+        }
+    } else {
+        printf("\n❌ Opcao invalida!\n");
+        return;
+    }
+
+    int encontrou = 0;
+
+    // percorre o vetor que já está na memória RAM
+    for (int i = 0; i < tam_usuarios; i++) {
+        int corresponde = 0;
+
+        if (tipo_busca == 1 && lista_usuarios[i].matricula == mat_busca) {
+            corresponde = 1;
+        } else if (tipo_busca == 2) {
+            // cria cópia em minúsculo do nome cadastrado para comparar
+            char nome_minusculo[250];
+            strcpy(nome_minusculo, lista_usuarios[i].nome);
+            for(int j = 0; nome_minusculo[j]; j++) {
+                nome_minusculo[j] = tolower(nome_minusculo[j]);
+            }
+            
+            if (strstr(nome_minusculo, termo_busca) != NULL) {
+                corresponde = 1;
+            }
+        }
+
+        if (corresponde) {
+            if (!encontrou) {
+                printf("\n --- USUARIO(S) ENCONTRADO(S) ---\n");
+            }
+            printf("Matricula: %d\n", lista_usuarios[i].matricula);
+            printf("Nome: %s\n", lista_usuarios[i].nome);
+            printf("Curso: %s\n", lista_usuarios[i].curso);
+            printf("Emprestimos Ativos: %d\n", lista_usuarios[i].qtd_emprestimos_ativos);
+            printf("------------------------------------\n");
+            encontrou = 1;
+
+            if (tipo_busca == 1) break; // se achou por matrícula, pode parar o loop
+        }
+    }
+
+    if (!encontrou) {
+        printf("\n❌ Nenhum usuario correspondente foi encontrado.\n");
+    }
+}
+void informarLivrosEmprestadosDoUsuario(usuario lista_usuarios[], int tam_usuarios) {
+    limpaTela();
+    desenhaBorda();
+    printf("\n  LIVROS EMPRESTADOS AO USUARIO \n");
+    desenhaBorda();
+
+    int mat_busca;
+    printf("Digite a matricula do usuario: ");
+    scanf("%d", &mat_busca);
+    getchar();
+
+    // procura o usuário na memória (RAM) para confirmar se existe e pegar o nome
+    int usuario_encontrado = 0;
+    char nome_usuario[250] = "";
+
+    for (int i = 0; i < tam_usuarios; i++) {
+        if (lista_usuarios[i].matricula == mat_busca) {
+            usuario_encontrado = 1;
+            strcpy(nome_usuario, lista_usuarios[i].nome);
+            break;
+        }
+    }
+
+    if (!usuario_encontrado) {
+        printf("\n Matricula %d nao encontrada no sistema.\n", mat_busca);
+        return;
+    }
+
+    // abre o arquivo de empréstimos
+    FILE *arq_emp = fopen("emprestimos.txt", "r");
+    if (arq_emp == NULL) {
+        printf("\nO usuario %s nao possui livros emprestados no momento.\n", nome_usuario);
+        return;
+    }
+
+    emprestimo emp;
+    int achou_emprestimo = 0;
+
+    while (fscanf(arq_emp, "%d\n", &emp.id) != EOF) {
+        fscanf(arq_emp, "%d\n", &emp.matricula_usuario);
+        fscanf(arq_emp, "%d\n", &emp.codigo_livro);
+        fscanf(arq_emp, "%[^\n]\n", emp.data_retirada);
+        fscanf(arq_emp, "%[^\n]\n", emp.data_prevista);
+        fscanf(arq_emp, "%[^\n]\n", emp.data_devolucao);
+        fscanf(arq_emp, "%d\n", &emp.devolvido);
+
+        // se o empréstimo for deste usuário e ainda não foi devolvido
+        if (emp.matricula_usuario == mat_busca && emp.devolvido == 0) {
+            if (!achou_emprestimo) {
+                printf("\nUsuario: %s (Matricula: %d)\n", nome_usuario, mat_busca);
+                printf("--- LIVROS EMPRESTADOS ATUALMENTE ---\n");
+            }
+            achou_emprestimo = 1;
+
+            // abre o arquivo "livros.txt" 
+            // e varre ele procurando o título do livro correspondente
+            char titulo_livro[250] = "Livro nao encontrado no acervo";
+            FILE *arq_livros = fopen("livros.txt", "r");
+            
+            if (arq_livros != NULL) {
+                livro aux_livro;
+                // lendo o arquivo de livros no mesmo padrão estruturado do seu grupo
+                while (fscanf(arq_livros, "%d\n", &aux_livro.codigo) != EOF) {
+                    fscanf(arq_livros, "%[^\n]\n", aux_livro.titulo);
+                    fscanf(arq_livros, "%[^\n]\n", aux_livro.autor);
+                    fscanf(arq_livros, "%d\n", &aux_livro.ano_de_publi);
+                    fscanf(arq_livros, "%[^\n]\n", aux_livro.genero);
+                    fscanf(arq_livros, "%d\n", &aux_livro.qtd_total);
+                    fscanf(arq_livros, "%d\n", &aux_livro.quant_disp);
+                    fscanf(arq_livros, "%d\n", &aux_livro.total_emprestimos);
+
+                    if (aux_livro.codigo == emp.codigo_livro) {
+                        strcpy(titulo_livro, aux_livro.titulo);
+                        break; // achou o livro, pode parar de ler o arquivo de livros
+                    }
+                }
+                fclose(arq_livros); // fecha o arquivo de livros para liberar a memória
+            }
+
+            // printa os dados combinados na tela
+            printf("ID Emprestimo: %d\n", emp.id);
+            printf("Livro: %s (Codigo: %d)\n", titulo_livro, emp.codigo_livro);
+            printf("Data de Retirada: %s\n", emp.data_retirada);
+            printf("Prazo de Devolucao: %s\n", emp.data_prevista);
+            printf("------------------------------------\n");
+        }
+    }
+    fclose(arq_emp); // fecha o arquivo de empréstimos
+
+    if (!achou_emprestimo) {
+        printf("\nO usuario %s nao possui livros emprestados no momento.\n", nome_usuario);
+    }
+}
+void SalvarUsuarios(usuario lista_usuarios[], int tam_usuarios) {
+    FILE *arquivo = fopen("usuarios.txt", "w"); 
+    if (arquivo == NULL) {
+        printf("\n Erro ao abrir o arquivo para salvar as atualizacoes!\n");
+        return;
+    }
+
+    for (int i = 0; i < tam_usuarios; i++) {
+        fprintf(arquivo, "%d\n", lista_usuarios[i].matricula);
+        fprintf(arquivo, "%s\n", lista_usuarios[i].nome);
+        fprintf(arquivo, "%s\n", lista_usuarios[i].curso);
+        fprintf(arquivo, "%d\n", lista_usuarios[i].qtd_emprestimos_ativos);
+    }
+    fclose(arquivo);
+}
+void atualizarUsuario(usuario lista_usuarios[], int tam_usuarios) {
+    limpaTela();
+    desenhaBorda();
+    printf("\n ATUALIZAR DADOS DO USUARIO \n");
+    desenhaBorda();
+
+    if (tam_usuarios == 0) {
+        printf("\n Nenhum usuario na memoria RAM. Certifique-se de que o arquivo nao esta corrompido.\n");
+        return;
+    }
+
+    int mat_busca;
+    printf("Digite a matricula do usuario que deseja atualizar: ");
+    scanf("%d", &mat_busca);
+    getchar(); 
+
+    int indice = -1;
+
+    // busca o usuário na RAM
+    for (int i = 0; i < tam_usuarios; i++) {
+        if (lista_usuarios[i].matricula == mat_busca) {
+            indice = i;
+            break;
+        }
+    }
+
+    if (indice == -1) {
+        printf("\n❌ Matricula %d nao encontrada.\n", mat_busca);
+        return;
+    }
+
+    printf("\n--- Dados Atuais ---\n");
+    printf("Nome: %s\n", lista_usuarios[indice].nome);
+    printf("Curso: %s\n", lista_usuarios[indice].curso);
+    printf("--------------------\n");
+
+    printf("\nDigite os novos dados:\n");
+    printf("Novo Nome: ");
+    scanf(" %[^\n]", lista_usuarios[indice].nome);
+    getchar();
+
+    printf("Novo Curso: ");
+    scanf(" %[^\n]", lista_usuarios[indice].curso);
+    getchar();
+
+    // salva as alterações de volta no arquivo txt
+    SalvarUsuarios(lista_usuarios, tam_usuarios);
+
+    printf("\n Dados atualizados com sucesso!\n");
+}
+
 void realizarEmprestimo(usuario lista_usuarios[], int tam_usuarios, emprestimo lista_emprestimos[], int *tam_emprestimos);
 void realizarDevolucao(usuario lista_usuarios[], int tam_usuarios, livro lista_livros[], int tam_livros, emprestimo lista_emprestimos[], int tam_emprestimos);
 
@@ -1028,7 +1288,7 @@ switch(opcao){
                     }
                 } while(opcaoSecundar != 7);
                 break;
-    case 2:
+      case 2:
     do{
     	   limpaTela();
            desenhaBorda();
@@ -1037,9 +1297,10 @@ switch(opcao){
 		   printf("\n [1] - Cadastrar usuarios ");
 		   printf("\n [2] - Listar usuarios");
 		   printf("\n [3] - Buscar usuarios ");
-		   printf("\n [4] - Atualizar dados");
-		   printf("\n [5] - Remover usuarios \n");
-		   printf(" [6] - Voltar ao menu principal \n");
+           printf("\n [4] - Informar os livros emprestados para um usuario");
+		   printf("\n [5] - Atualizar dados");
+		   printf("\n [6] - Remover usuarios \n");
+		   printf(" [7] - Sair \n");
 		   printf("Escolha uma opcao: ");
 		   scanf("%d", &opcao2);
            getchar();
@@ -1048,15 +1309,14 @@ switch(opcao){
 		   switch (opcao2) {
 		    case 1: 
 				limpaTela();
-		    if (total_usuarios<1000) {// cadastra e bloqueia se vetor estiver cheio
+		    if (total_usuarios<1000) {
         
         cadastrarUsuario(vetor_usuarios, &total_usuarios);
         
         }else {
     
         printf("Erro: limite de usuarios atingidos!");
-		printf("Pressione Enter para voltar.\n");
-		getchar();
+		}
 		break;
 		case 2:
 			limpaTela();
@@ -1065,21 +1325,29 @@ switch(opcao){
 			getchar();
 		break;
 		case 3:
-		printf("opção 3 escolhida");
+        limpaTela();
+		buscarUsuario(vetor_usuarios, total_usuarios);
+        printf("\nDigite enter para voltar.");
+            getchar();
 		break;
 		case 4:
-		printf("opção 4 escolhida");
+		limpaTela();
+            informarLivrosEmprestadosDoUsuario(vetor_usuarios, total_usuarios);
+            printf("\nDigite enter para voltar.");
+            getchar();
 		break;
 		case 5:
-			  listarLivros();
-	  listarLivros();
+		  limpaTela();
+                atualizarUsuario(vetor_usuarios, total_usuarios);
+                printf("\nDigite enter pra voltar.");
+                getchar();
 		break;
 		case 6:
 		printf("opção 6 escolhida");
 		break;
 		   }
 		}
-		while (opcao2 != 6);// enquanto o usuario nao optar por sair do menu secundario ele vai se repetir
+		while (opcao2 != 7);// enquanto o usuario nao optar por sair do menu secundario ele vai se repetir
     break;
     case 3:
     printf("opção 3 foi escolhida\n");
