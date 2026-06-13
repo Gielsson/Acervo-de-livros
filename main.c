@@ -42,27 +42,49 @@ void desenhaBorda(){
 void limpaTela(){ // FUNÇÃO QUE LIMPA A TELA
     system ("CLS || clear");// se for linux =cls, se wind = clear
 }
+
+// Lê um livro inteiro do arquivo e retorna a struct livro preencida.
+livro lerLivro(FILE *arq) {
+    livro dado;
+    fscanf(arq, "%d\n",     &dado.codigo);
+    fscanf(arq, "%[^\n]\n", dado.titulo);
+    fscanf(arq, "%[^\n]\n", dado.autor);
+    fscanf(arq, "%d\n",     &dado.ano_de_publi);
+    fscanf(arq, "%[^\n]\n", dado.genero);
+    fscanf(arq, "%d\n",     &dado.qtd_total);
+    fscanf(arq, "%d\n",     &dado.quant_disp);
+    fscanf(arq, "%d\n",     &dado.total_emprestimos);
+    return dado;
+}
+void gravarLivro(FILE *arq, livro dado){ // grava um livro no arquivo
+    fprintf(arq, "%d\n",  dado.codigo);
+    fprintf(arq, "%s\n",  dado.titulo);
+    fprintf(arq, "%s\n",  dado.autor);
+    fprintf(arq, "%d\n",  dado.ano_de_publi);
+    fprintf(arq, "%s\n",  dado.genero);
+    fprintf(arq, "%d\n",  dado.qtd_total);
+    fprintf(arq, "%d\n",  dado.quant_disp);
+    fprintf(arq, "%d\n",  dado.total_emprestimos);
+}
+// Percorre o arquivo inteiro para descobrir qual foi o último código gravado.
 int obterProximoCodigo(){ // descobre o ultimo id para gerar o proximo automaticamente
 FILE *arquivo = fopen("livros.txt", "r");
 if(arquivo == NULL){
     return 1; // SE O ARQ n existir, o primeiro arq sera 1
 }
-livro info; // variavel para armazenar os valores na struct livro
+livro aux; // variavel para armazenar os valores na struct livro
 int ultimo_id=0;
-while (fscanf(arquivo, "%d\n", &info.codigo) !=EOF){//// Le  arquivo inteiro linha por linha. O último ID que passar por aqui será guardado.
-fscanf(arquivo, "%[^\n]\n", info.titulo);
-fscanf(arquivo, "%[^\n]\n", info.autor);
-fscanf(arquivo, "%d\n", &info.ano_de_publi);
-fscanf(arquivo, "%[^\n]\n", info.genero);
-fscanf(arquivo, "%d\n", &info.qtd_total);
-fscanf(arquivo, "%d\n", &info.quant_disp);
-fscanf(arquivo, "%d\n", &info.total_emprestimos);
-ultimo_id = info.codigo;
+// Lê livro por livro até o fim do arquivo, guardando sempre o último código visto
+while (fscanf(arquivo, "%d\n", &aux.codigo) !=EOF){
+ aux = lerLivro(arquivo); // lê os campos restantes
+
+        ultimo_id = aux.codigo;  // vai guardando o último
+    }
+    fclose(arquivo);
+    return ultimo_id + 1;
 }
-fclose(arquivo);
-return ultimo_id + 1; // oproximo codigo sera o ultimo + 1;
-}
-void cadastrarLivro(int id_automatico) {
+
+void cadastrarLivro(int id_automatico) { // O parâmetro id_automatico já vem calculado pela obterProximoCodigo()
     char continuar;
     do{
     livro novo;
@@ -76,13 +98,13 @@ void cadastrarLivro(int id_automatico) {
     printf("Digite o ano de publicacao do livro: \n");
     while(scanf("%d", &novo.ano_de_publi)!=1){
         printf("\n ERRO: Ano invalido! Digite apenas numeros.\n");
-        while(getchar() !='n'); //limpa buffer (letra que ficou traavdano teclado)
+        while(getchar() !='\n'); //limpa buffer (letra que ficou traavdano teclado)
         printf("Digite o ano de publicacao do livro novamente: \n");
     }
     getchar(); 
     int genero_valido;
         do {
-            genero_valido =1; // ja cmeça sasumindo que esta correto
+            genero_valido =1; // ja começa sasumindo que esta correto
     printf("Digite o genero do livro: \n");
     scanf(" %[^\n]", novo.genero);
     // Varre o texto usando a Tabela ASCII para achar números
@@ -92,7 +114,8 @@ void cadastrarLivro(int id_automatico) {
     genero_valido = 0; // Se achou número, invalida
     break;
      }
-    } if (genero_valido == 0) {
+    } 
+    if (genero_valido == 0) {
                 printf("\n⚠️ Erro: Genero invalido! Nao use numeros.\n");
             }
         } while (genero_valido == 0); // Só repete se for inválido
@@ -110,41 +133,24 @@ getchar();
     FILE *arquivo = fopen("livros.txt", "a");// abre o arq em modo "a", o qual adiciona ao final
  if (arquivo == NULL){
     printf("Erro ao abrir o arquivo para salvar!\n");
+    return;
  }
- fprintf(arquivo, "%d\n", novo.codigo); // gravando todos os campos da struct livro
-    fprintf(arquivo, "%s\n", novo.titulo);
-    fprintf(arquivo, "%s\n", novo.autor);
-    fprintf(arquivo, "%d\n", novo.ano_de_publi);
-    fprintf(arquivo, "%s\n", novo.genero);
-    fprintf(arquivo, "%d\n", novo.qtd_total);
-    fprintf(arquivo, "%d\n", novo.quant_disp);
-    fprintf(arquivo, "%d\n", novo.total_emprestimos);
-    fclose(arquivo);
-    printf("\nLivro cadastrado com sucesso!\n");
-    printf("deseja cadastrar outro livro? (S/N)");
-    scanf(" %c", &continuar);
-    getchar(); //engole a quebra de linha 
-    continuar = tolower(continuar);
+  gravarLivro(arquivo, novo);
+  fclose(arquivo);
+  
+  printf("\nLivro cadastrado com sucesso!\n");
+        printf("Deseja cadastrar outro livro? (S/N): ");
+        scanf(" %c", &continuar);
+        getchar();
+        continuar = tolower(continuar);
     
     if(continuar == 's'){
     id_automatico = obterProximoCodigo();
     }
     } while (continuar == 's');
 }
-// Lê um livro inteiro do arquivo e retorna dado se conseguiu, 0 se chegou no fim.
-livro lerLivro(FILE *arq) {
-    livro dado;
-    fscanf(arq, "%d\n",     &dado.codigo);
-    fscanf(arq, "%[^\n]\n", dado.titulo);
-    fscanf(arq, "%[^\n]\n", dado.autor);
-    fscanf(arq, "%d\n",     &dado.ano_de_publi);
-    fscanf(arq, "%[^\n]\n", dado.genero);
-    fscanf(arq, "%d\n",     &dado.qtd_total);
-    fscanf(arq, "%d\n",     &dado.quant_disp);
-    fscanf(arq, "%d\n",     &dado.total_emprestimos);
-    return dado;
-}
-void listarLivros(){
+
+    void listarLivros(){
 FILE *arquivo = fopen("livros.txt", "r");
 if(arquivo ==NULL){
     printf(" Nenhum livro cadastrado no sistema ainda. \n");
@@ -156,6 +162,7 @@ printf("\n---LIVROS CADASTRADOS NO ACERVO ---\n");
 
 
 while (fscanf(arquivo, "%d\n", &info.codigo) !=EOF){
+ // lê os demais campos manualmente pois o codigo já foi lido  
 fscanf(arquivo, "%[^\n]\n", info.titulo);
 fscanf(arquivo, "%[^\n]\n", info.autor);
 fscanf(arquivo, "%d\n", &info.ano_de_publi);
@@ -168,14 +175,15 @@ printf("Codigo: %d\n", info.codigo);
   printf("Titulo: %s\n", info.titulo);
  printf("Autor: %s\n", info.autor);
  printf("Quantidade total: %d\n", info.qtd_total);
+  printf("Disponiveis: %d\n",    info.quant_disp);
 printf("------------------------------------\n");
 encontrou =1;
     
 } if (!encontrou){
     printf("O arquivo esta vazio. \n");
-}
-fclose(arquivo);
-} 
+
+} fclose(arquivo);
+    }
 void buscarLivro() {
     FILE *arquivo = fopen("livros.txt", "r");
     if (arquivo == NULL) {
@@ -233,17 +241,17 @@ void buscarLivro() {
         int corresponde = 0;  // verfica se esse livro bate com o que o usuario procurou
 
         if (tipo_busca == 1 && info.codigo == cod_busca) {
-            // achou o livro pelo codigo
-             corresponde = 1;
+           
+             corresponde = 1; //código bate exatamente
         } else if (tipo_busca == 2) {
-           // coloca o titulo do livro em minusculo tambem para comparar
+           // coloca o titulo do livro em minusculo tambem para n alterar o original
             char titulo_minusculo[250];
             strcpy(titulo_minusculo, info.titulo);
+
             for(int i = 0; titulo_minusculo[i]; i++) {
                 titulo_minusculo[i] = tolower(titulo_minusculo[i]);
             }
-
-            // strstr verifica se o que o usuario digitou esta dentro do titulo
+            // strstr verifica se o que o usuario digitou esta dentro do titulo e retorna NULL se não encontrar o termo dentro do título
             if (strstr(titulo_minusculo, termo_busca) != NULL) {
                 corresponde = 1;
             }
@@ -260,7 +268,9 @@ void buscarLivro() {
             printf("Genero: %s\n", info.genero);
             printf("Ano: %d\n", info.ano_de_publi);
             printf("Disponivel: %d/%d\n", info.quant_disp, info.qtd_total);
+           
             printf("------------------------------------\n");
+           
             encontrou = 1;
             // se achou pelo codigo nao precisa continuar procurando
             if (tipo_busca == 1) break; // Se buscou por ID único, pode parar o loop
@@ -273,7 +283,177 @@ void buscarLivro() {
 
     fclose(arquivo);
 }
-//função pra ler os usuarios
+void editarLivro(){ // Permite alterar título, autor, gênero, ano e quantidade de um livro já cadastrado
+    limpaTela();
+    desenhaBorda();
+    printf("\nEDITAR LIVRO\n");
+    desenhaBorda();
+ 
+    int cod_busca;
+    printf("Digite o codigo do livro que deseja editar: ");
+    scanf("%d", &cod_busca);
+    getchar();
+ 
+    FILE *arq_orig = fopen("livros.txt", "r");
+    if(arq_orig == NULL){
+        printf("\nNenhum livro cadastrado no sistema.\n");
+        return;
+    }
+ //lê o original e grava tudo no arquivo temp
+    // Arquivo temporario recebe todos os livros, com o escolhido já alterado
+    FILE *arq_temp = fopen("temp_livros.txt", "w");
+    if(arq_temp == NULL){
+        printf("\nErro ao criar arquivo temporario!\n");
+      fclose(arq_orig);
+        return;
+    }
+   livro aux;
+    int encontrou = 0;
+ 
+    while(fscanf(arq_orig, "%d\n", &aux.codigo) != EOF){
+        fscanf(arq_orig, "%[^\n]\n", aux.titulo);
+        fscanf(arq_orig, "%[^\n]\n", aux.autor);
+        fscanf(arq_orig, "%d\n",     &aux.ano_de_publi);
+        fscanf(arq_orig, "%[^\n]\n", aux.genero);
+        fscanf(arq_orig, "%d\n",     &aux.qtd_total);
+        fscanf(arq_orig, "%d\n",     &aux.quant_disp);
+        fscanf(arq_orig, "%d\n",     &aux.total_emprestimos);
+ 
+        // Só edita o livro q o código bate com o digitado
+        if(aux.codigo == cod_busca){
+            encontrou = 1;
+            printf("\nLivro encontrado: %s\n", aux.titulo);
+            printf("Deixe o campo em branco e pressione Enter para manter o valor atual.\n\n");
+ 
+            char entrada[256];
+ printf("Titulo atual [%s]: ", aux.titulo);
+            fgets(entrada, sizeof(entrada), stdin);
+            entrada[strcspn(entrada, "\n")] = '\0'; // strcspn descobre a posição, se n achar, ele devolve o tamanho total da string
+             // remove o '\n' que fgets captura
+            if(strlen(entrada) > 0) strcpy(aux.titulo, entrada);
+ 
+            printf("Autor atual [%s]: ", aux.autor);
+            fgets(entrada, sizeof(entrada), stdin);
+            entrada[strcspn(entrada, "\n")] = '\0';
+            if(strlen(entrada) > 0) strcpy(aux.autor, entrada);
+// Para cada espaço de informação, lê a nova entrada; se vazia, mantém o atual
+
+printf("Genero atual [%s]: ", aux.genero);
+            fgets(entrada, sizeof(entrada), stdin);
+            entrada[strcspn(entrada, "\n")] = '\0';
+            if(strlen(entrada) > 0){
+                // faz uma revalidação, pois gênero não pode conter números
+                int genero_valido = 1;
+                for(int i = 0; entrada[i] != '\0'; i++){
+                    if(entrada[i] >= '0' && entrada[i] <= '9'){
+                        genero_valido = 0;
+                        break;
+                    }
+                }
+                if(genero_valido) strcpy(aux.genero, entrada);
+                else printf("Genero invalido, mantendo o anterior.\n");
+
+
+            }
+ 
+            // se 0, não alterar
+            printf("Ano atual [%d] (0 para manter): ", aux.ano_de_publi);
+            int novo_ano;
+            scanf("%d", &novo_ano);
+            getchar();
+            if(novo_ano != 0) aux.ano_de_publi = novo_ano;
+ 
+            printf("Quantidade total atual [%d] (0 para manter): ", aux.qtd_total);
+            int nova_qtd;
+            scanf("%d", &nova_qtd);
+            getchar();
+            if(nova_qtd > 0){
+                // Calcula quantos exemplares estão fora (emprestados) para manter a conta certa
+                int em_uso  = aux.qtd_total - aux.quant_disp;
+                aux.qtd_total = nova_qtd;
+                aux.quant_disp  = nova_qtd - em_uso;
+                if(aux.quant_disp < 0) aux.quant_disp = 0; // n deixa que tenha valor negativo
+            } // Grava o livro, mesmi q seja alterado ou não no arquivo temporário
+        }
+        gravarLivro(arq_temp, aux);
+    }
+         fclose(arq_orig);
+    fclose(arq_temp);// Substitui o arquivo original pelo temporário, que tem os dados atualizados
+                //função pra ler os usuarios
+
+   remove("livros.txt");
+    rename("temp_livros.txt", "livros.txt");
+ 
+    if(encontrou) {
+        printf("\nLivro atualizado com sucesso!\n");
+    }
+    else {
+ printf("\nCodigo %d nao encontrado.\n", cod_busca);
+ }
+}
+
+void removerLivro(){ // Remove um livro do acervo pelo código
+    limpaTela();
+    desenhaBorda();
+    printf("\nREMOVER LIVRO\n");
+    desenhaBorda();
+ 
+    int cod_busca;
+    printf("Digite o codigo do livro que deseja remover: ");
+    scanf("%d", &cod_busca);
+    getchar();
+ 
+    FILE *arq_orig = fopen("livros.txt", "r");
+    if(arq_orig == NULL){
+        printf("\nNenhum livro cadastrado no sistema.\n");
+        return;
+    }
+ 
+    FILE *arq_temp = fopen("temp_livros.txt", "w");
+    if(arq_temp == NULL){
+        printf("\nErro ao criar arquivo temporario!\n");
+        fclose(arq_orig);
+        return;
+    }
+ livro aux;
+    int encontrou = 0;
+ 
+    while(fscanf(arq_orig, "%d\n", &aux.codigo) != EOF){
+        fscanf(arq_orig, "%[^\n]\n", aux.titulo);
+        fscanf(arq_orig, "%[^\n]\n", aux.autor);
+        fscanf(arq_orig, "%d\n",     &aux.ano_de_publi);
+        fscanf(arq_orig, "%[^\n]\n", aux.genero);
+        fscanf(arq_orig, "%d\n",     &aux.qtd_total);
+        fscanf(arq_orig, "%d\n",     &aux.quant_disp);
+        fscanf(arq_orig, "%d\n",     &aux.total_emprestimos);
+ 
+        if(aux.codigo == cod_busca){
+            encontrou = 1;
+ // não permite remover se houver exemplares emprestados
+
+            if(aux.quant_disp < aux.qtd_total){//significa que alguém está com o livro.
+                printf("\nNao e possivel remover: ha exemplares emprestados no momento.\n");
+                fclose(arq_orig);
+                fclose(arq_temp);
+                remove("temp_livros.txt"); // descarta o temp incompleto
+                return;
+            }
+             printf("\nLivro '%s' removido.\n", aux.titulo);
+        } else {
+            // Todos os outros livros são copiados normalmente para o temp
+            gravarLivro(arq_temp, aux);
+        }
+    }
+ 
+    fclose(arq_orig);
+    fclose(arq_temp);
+ 
+    remove("livros.txt");
+    rename("temp_livros.txt", "livros.txt");
+ 
+    if(!encontrou) printf("\nCodigo %d nao encontrado.\n", cod_busca);
+}
+
 void LerUsuarios(usuario lista_usuarios[], int *tam_usuarios){
     FILE *arquivo = fopen("usuarios.txt", "r");
 
@@ -663,10 +843,16 @@ for (int i=0; i<tam_usuarios; i++){
 } // fecha a função realizarDevolucao
 int main(){
 setlocale(LC_ALL, "Portuguese");
-usuario vetor_usuarios[1000];
+
+    usuario vetor_usuarios[1000];
     int total_usuarios = 0;
 	LerUsuarios(vetor_usuarios, &total_usuarios);
-int opcao, opcao2,opcaoSecundar; // variavel usada para guardar a opção escolhida  pelo usuário do menu
+
+     emprestimo vetor_emprestimos[5000];// Vetor de empréstimos (usado para controlar o próximo ID)
+     int total_emprestimos = 0;
+
+     int opcao, opcao2,opcaoSecundar; // variavel usada para guardar a opção escolhida  pelo usuário do menu
+     
 do{
      limpaTela();
     desenhaBorda();
@@ -691,38 +877,52 @@ switch(opcao){
                     printf("\n [1] - Cadastrar livro");
                     printf("\n [2] - Listar livros");
                     printf("\n [3] - Buscar livro");
-                    printf("\n [4] - Voltar ao Menu Principal\n");
-                    printf("Escolha uma opção: ");
+                     printf("\n [4] - Editar livro");
+                    printf("\n [5] - Remover livro");
+                    printf("\n [6] - Voltar ao Menu Principal\n");
+                    printf("Escolha uma opcao: ");
                     scanf("%d", &opcaoSecundar);
                     getchar();
-                    switch(opcaoSecundar) {
+ 
+                    switch(opcaoSecundar){
     case 1: {
-                            int proximo_codigo = obterProximoCodigo();
-                            cadastrarLivro(proximo_codigo);
-                            break;
+         // Calcula o próximo ID e passa para a função de cadastro
+         cadastrarLivro(obterProximoCodigo());
+          break;
                         }
     case 2:
                             limpaTela();
                             listarLivros();
-                            printf("\nPressione Enter para voltar...");
+                            printf("\nPressione enter para voltar");
                             getchar(); // Pausa para o usuário ler
                             break;
     case 3:
-                            printf("\nFunção de busca blablabla.\n");
-                            printf("Pressione Enter para voltar...");
-                            getchar();
+                            buscarLivro();
+                            printf("\nPressione enter para voltar\n");
                             break;
      case 4:
+                            editarLivro();
+                            printf("\nPressione enter para voltar\n");
+                            getchar();
                             break;
+
+    case 5:
+                         removerLivro();
+                            printf("\nPressione enter para voltar\n");
+                            getchar();
+                            break;
+         
+         
+         case 6:
+                  break; // sai do mneu secundario de livros
                         default:
-                            printf("\nOpção inválida!\n");
-                            printf("Pressione Enter para tentar novamente...");
+                            printf("\nOpcao invalida!\n");
+                            printf("Pressione Enter para tentar novamente");
                             getchar();
                             break;
                     }
-                } while(opcaoSecundar != 4);
+                } while(opcaoSecundar != 6);
                 break;
-
     case 2:
     do{
     	   limpaTela();
