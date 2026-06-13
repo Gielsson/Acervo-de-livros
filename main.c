@@ -561,52 +561,43 @@ void LerUsuarios(usuario lista_usuarios[], int *tam_usuarios){
     if(arquivo == NULL){
         return;
     }
-
-    while(fscanf(arquivo, "%d\n",
-           &lista_usuarios[*tam_usuarios].matricula) != EOF){
-
-        fscanf(arquivo, "%[^\n]\n",
-               lista_usuarios[*tam_usuarios].nome);
-
-        fscanf(arquivo, "%[^\n]\n",
-               lista_usuarios[*tam_usuarios].curso);
-
-        fscanf(arquivo, "%d\n",
-               &lista_usuarios[*tam_usuarios].qtd_emprestimos_ativos);
-
-        (*tam_usuarios)++;
+// lê enquanto houver registros; *tam_usuarios vai de 0 até o fim do arquivo
+    while(fscanf(arquivo, "%d\n", &lista_usuarios[*tam_usuarios].matricula) != EOF){
+		fscanf(arquivo, "%[^\n]\n", lista_usuarios[*tam_usuarios].nome);
+		fscanf(arquivo, "%[^\n]\n", lista_usuarios[*tam_usuarios].curso);
+		fscanf(arquivo, "%d\n", &lista_usuarios[*tam_usuarios].qtd_emprestimos_ativos);
+		 (*tam_usuarios)++;  // avança para a próxima posição livre do vetor
     }
 
     fclose(arquivo);
 }
 int obterProximaMatricula(){
     FILE *arquivo = fopen("usuarios.txt", "r");
-
-    if(arquivo == NULL){
+	 if(arquivo == NULL){ // arquivo vazio- primeira matrícula do sistema
         return 202600;
     }
 
     usuario info;
-    int ultimaMatricula = 202599;
-
+    int ultimaMatricula = 202599;// valor base: uma abaixo da primeira matrícula
+	
+ // percorre o arquivo inteiro guardando sempre a última matrícula lida
     while(fscanf(arquivo, "%d\n", &info.matricula) != EOF){
         fscanf(arquivo, "%[^\n]\n", info.nome);
         fscanf(arquivo, "%[^\n]\n", info.curso);
         fscanf(arquivo, "%d\n", &info.qtd_emprestimos_ativos);
-
-        ultimaMatricula = info.matricula;
+		 ultimaMatricula = info.matricula;
     }
 
     fclose(arquivo);
-
-    return ultimaMatricula + 1;
+	return ultimaMatricula + 1;
 }
 // insere novo perfil
 void cadastrarUsuario(usuario lista_usuarios[], int *tam_usuarios) {
     // o ponteiro aponta pro total de usuarios que, no caso é a posição do usuario no vetor 
-    int posicao = *tam_usuarios; 
+    int posicao = *tam_usuarios; // próxima posição livre no vetor (0, 1, 2...)
+	 limpaTela();
     printf("\n=== CADASTRO DE NOVO USUARIO ===\n");
-    //gera a matrícula automaticamente com base na posição
+    //gera a matrícula automaticamente — o usuário não digita
     lista_usuarios[posicao].matricula = obterProximaMatricula();
     printf("Matricula gerada: %d\n", lista_usuarios[posicao].matricula);
     //lê o nome completo
@@ -615,13 +606,12 @@ void cadastrarUsuario(usuario lista_usuarios[], int *tam_usuarios) {
     //lê o curso
     printf("Digite o curso: ");
     scanf(" %[^\n]", lista_usuarios[posicao].curso);
-    // inicializa o contador de empréstimos do usuário zerado
-    lista_usuarios[posicao].qtd_emprestimos_ativos = 0;
+	
+    lista_usuarios[posicao].qtd_emprestimos_ativos = 0;// novo usuário começa sem empréstimos
     // soma 1 na variável total_usuarios que esta sendo apontada
    
-
+ // grava no arquivo em modo append (não apaga os já existentes)
     FILE *arquivo = fopen("usuarios.txt", "a");
-
 if(arquivo == NULL){
     printf("Erro ao abrir arquivo!\n");
     return;
@@ -635,12 +625,15 @@ fprintf(arquivo, "%d\n", lista_usuarios[posicao].qtd_emprestimos_ativos);
 fclose(arquivo);
     printf("Usuario cadastrado com sucesso!\n");
     printf("================================\n");
-     (*tam_usuarios)++;
+     (*tam_usuarios)++; // só incrementa depois de gravar com sucesso
 }
 void ListarUsuarios(usuario lista_usuarios[], int tam_usuarios){
 
     limpaTela();
     printf("\n=== USUARIOS CADASTRADO ===\n");
+	  if (total == 0) {
+        printf("Nenhum usuario cadastrado ainda.\n");
+        return;
 
     for(int i=0;i < tam_usuarios;i++){
         printf("Nome: %s\n", lista_usuarios[i].nome);
@@ -648,9 +641,7 @@ void ListarUsuarios(usuario lista_usuarios[], int tam_usuarios){
         printf("Matricula: %d\n", lista_usuarios[i].matricula);
         printf("Emprestimos ativos: %d\n", lista_usuarios[i].qtd_emprestimos_ativos);
 desenhaBorda();
-    }
-
-    
+    } 
 }
 void realizarEmprestimo(usuario lista_usuarios[], int tam_usuarios, emprestimo lista_emprestimos[], int *tam_emprestimos);
 void realizarDevolucao(usuario lista_usuarios[], int tam_usuarios, livro lista_livros[], int tam_livros, emprestimo lista_emprestimos[], int tam_emprestimos);
@@ -1048,7 +1039,7 @@ switch(opcao){
 		   printf("\n [3] - Buscar usuarios ");
 		   printf("\n [4] - Atualizar dados");
 		   printf("\n [5] - Remover usuarios \n");
-		   printf(" [6] - Sair \n");
+		   printf(" [6] - Voltar ao menu principal \n");
 		   printf("Escolha uma opcao: ");
 		   scanf("%d", &opcao2);
            getchar();
@@ -1057,14 +1048,15 @@ switch(opcao){
 		   switch (opcao2) {
 		    case 1: 
 				limpaTela();
-		    if (total_usuarios<1000) {
+		    if (total_usuarios<1000) {// cadastra e bloqueia se vetor estiver cheio
         
         cadastrarUsuario(vetor_usuarios, &total_usuarios);
         
         }else {
     
         printf("Erro: limite de usuarios atingidos!");
-		}
+		printf("Pressione Enter para voltar.\n");
+		getchar();
 		break;
 		case 2:
 			limpaTela();
