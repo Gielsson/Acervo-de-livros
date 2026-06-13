@@ -645,7 +645,7 @@ void ListarUsuarios(usuario lista_usuarios[], int tam_usuarios){
     for(int i=0;i < tam_usuarios;i++){
         printf("Nome: %s\n", lista_usuarios[i].nome);
         printf("Curso: %s\n", lista_usuarios[i].curso);
-        printf("Matricula: %d\n", &lista_usuarios[i].matricula);
+        printf("Matricula: %d\n", lista_usuarios[i].matricula);
         printf("Emprestimos ativos: %d\n", lista_usuarios[i].qtd_emprestimos_ativos);
 desenhaBorda();
     }
