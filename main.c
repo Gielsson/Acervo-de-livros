@@ -334,8 +334,8 @@ void editarLivro(){ // Permite alterar título, autor, gênero, ano e quantidade
  
             printf("Autor atual [%s]: ", aux.autor);
             fgets(entrada, sizeof(entrada), stdin);
-            entrada[strcspn(entrada, "\n")] = '\0';
-            if(strlen(entrada) > 0) strcpy(aux.autor, entrada);
+            entrada[strcspn(entrada, "\n")] = '\0'; // strcspn indica posição, em inteiro,  do primeiro espaço na string
+            if(strlen(entrada) > 0) strcpy(aux.autor, entrada); // se tamanho >  0, usuario digitou algo.
 // Para cada espaço de informação, lê a nova entrada; se vazia, mantém o atual
 
 printf("Genero atual [%s]: ", aux.genero);
@@ -381,7 +381,7 @@ printf("Genero atual [%s]: ", aux.genero);
     fclose(arq_temp);// Substitui o arquivo original pelo temporário, que tem os dados atualizados
                 //função pra ler os usuarios
 
-   remove("livros.txt");
+    remove("livros.txt");
     rename("temp_livros.txt", "livros.txt");
  
     if(encontrou) {
@@ -418,14 +418,14 @@ void removerLivro(){ // Remove um livro do acervo pelo código
  livro aux;
     int encontrou = 0;
  
-    while(fscanf(arq_orig, "%d\n", &aux.codigo) != EOF){
+ while(fscanf(arq_orig, "%d\n", &aux.codigo) != EOF){
         fscanf(arq_orig, "%[^\n]\n", aux.titulo);
         fscanf(arq_orig, "%[^\n]\n", aux.autor);
-        fscanf(arq_orig, "%d\n",     &aux.ano_de_publi);
+        fscanf(arq_orig, "%d\n", &aux.ano_de_publi);
         fscanf(arq_orig, "%[^\n]\n", aux.genero);
-        fscanf(arq_orig, "%d\n",     &aux.qtd_total);
-        fscanf(arq_orig, "%d\n",     &aux.quant_disp);
-        fscanf(arq_orig, "%d\n",     &aux.total_emprestimos);
+        fscanf(arq_orig, "%d\n", &aux.qtd_total);
+        fscanf(arq_orig, "%d\n", &aux.quant_disp);
+        fscanf(arq_orig, "%d\n", &aux.total_emprestimos);
  
         if(aux.codigo == cod_busca){
             encontrou = 1;
