@@ -84,7 +84,7 @@ while (fscanf(arquivo, "%d\n", &aux.codigo) !=EOF){
     return ultimo_id + 1;
 }
 
-void cadastrarLivro(int id_automatico) { // O parâmetro id_automatico já vem calculado pela obterProximoCodigo()
+void cadastrarLivro(int id_automatico) { // id inicial calculado por obterProximoCodigo(); pode ser atualizado a cada novo cadastro
     char continuar;
     do{
     livro novo;
