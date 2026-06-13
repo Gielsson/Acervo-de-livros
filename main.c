@@ -193,7 +193,7 @@ void buscarLivro() {
 
     limpaTela();
     desenhaBorda();
-    printf("\n🔍 BUSCAR LIVRO NO ACERVO 🔍\n");
+    printf("\n BUSCAR LIVRO NO ACERVO \n");
     desenhaBorda();
 
     int tipo_busca;
@@ -259,7 +259,7 @@ void buscarLivro() {
 
         if (corresponde) {
             if (!encontrou) {
-                printf("\n📖 --- LIVRO(S) ENCONTRADO(S) ---\n");
+                printf("\n --- LIVRO(S) ENCONTRADO(S) ---\n");
             }
             // mostra os dados do livro encontrado
             printf("Codigo: %d\n", info.codigo);
@@ -452,6 +452,107 @@ void removerLivro(){ // Remove um livro do acervo pelo código
     rename("temp_livros.txt", "livros.txt");
  
     if(!encontrou) printf("\nCodigo %d nao encontrado.\n", cod_busca);
+}
+
+// Exibe todos os usuários que estão com um exemplar de um livro específico no momento.
+//e recebe o vetor de usuários para conseguir mostrar o nome junto à matrícula.
+void informarEmprestimosDoLivro(usuario lista_usuarios[], int tam_usuarios){
+    limpaTela();
+    desenhaBorda();
+    printf("\n  EMPRESTIMOS ATIVOS \n");
+    desenhaBorda();
+
+    int cod_busca;
+    printf("Digite o codigo do livro: ");
+    scanf("%d", &cod_busca);
+    getchar();
+
+    // Abre o acervo para confirmar que o código existe antes de procurar empréstimos
+    FILE *arq_livros = fopen("livros.txt", "r");
+    if(arq_livros == NULL){
+        printf("\nNenhum livro cadastrado no sistema.\n");
+        return;
+    }
+
+    livro aux;
+    int livro_encontrado = 0;
+    char titulo_livro[250] = ""; // guarda o título para usar nas mensagens
+
+    while(fscanf(arq_livros, "%d\n", &aux.codigo) != EOF){
+        fscanf(arq_livros, "%[^\n]\n", aux.titulo);
+        fscanf(arq_livros, "%[^\n]\n", aux.autor);
+        fscanf(arq_livros, "%d\n",     &aux.ano_de_publi);
+        fscanf(arq_livros, "%[^\n]\n", aux.genero);
+        fscanf(arq_livros, "%d\n",     &aux.qtd_total);
+        fscanf(arq_livros, "%d\n",     &aux.quant_disp);
+        fscanf(arq_livros, "%d\n",     &aux.total_emprestimos);
+
+        if(aux.codigo == cod_busca){
+            livro_encontrado = 1;
+            strcpy(titulo_livro, aux.titulo); // salva o título para exibir depois
+            break; // achou o livro, não precisa continuar lendo o arquivo
+        }
+    }
+    fclose(arq_livros);
+
+    // Se o código não existir no acervo, não faz sentido procurar empréstimos
+    if(!livro_encontrado){
+        printf("\nCodigo %d nao encontrado no acervo.\n", cod_busca);
+        return;
+    }
+
+    // Abre o arquivo de empréstimos para procurar registros desse livro
+    FILE *arq_emp = fopen("emprestimos.txt", "r");
+    if(arq_emp == NULL){
+        // Arquivo não existe ainda, ou seja, nenhum empréstimo foi feito no sistema
+        printf("\nO livro '%s' nao possui emprestimos ativos.\n", titulo_livro);
+        return;
+    }
+
+    emprestimo emp;
+    int achou_emprestimo = 0; //se continuar 0 no final, nenhum empréstimo ativo foi achado
+
+    while(fscanf(arq_emp, "%d\n", &emp.id) != EOF){
+        fscanf(arq_emp, "%d\n",     &emp.matricula_usuario);
+        fscanf(arq_emp, "%d\n",     &emp.codigo_livro);
+        fscanf(arq_emp, "%[^\n]\n", emp.data_retirada);
+        fscanf(arq_emp, "%[^\n]\n", emp.data_prevista);
+        fscanf(arq_emp, "%[^\n]\n", emp.data_devolucao);
+        fscanf(arq_emp, "%d\n",     &emp.devolvido);
+
+        // so interessa o livro certo e que ainda não foi devolvido, se devolvido == 0
+        if(emp.codigo_livro == cod_busca && emp.devolvido == 0){
+
+            // Imprime o cabeçalho só uma vez, na primeira vez encontrada
+            if(!achou_emprestimo){
+                printf("\nLivro: %s (Codigo: %d)\n", titulo_livro, cod_busca);
+                printf("--- EMPRESTIMOS ATIVOS ---\n");
+            }
+            achou_emprestimo = 1;
+
+            // Busca o nome do usuário no vetor em memória usando a matrícula como chave
+            char nome_usuario[250] = "Usuario nao encontrado"; // valor padrão caso não ache
+            for(int k = 0; k < tam_usuarios; k++){
+                if(lista_usuarios[k].matricula == emp.matricula_usuario){
+                    strcpy(nome_usuario, lista_usuarios[k].nome);
+                    break; // achou o usuário, encerra a busca no vetor
+                }
+            }
+
+            printf("ID Emprestimo: %d\n",  emp.id);
+            printf("Usuario: %s\n",        nome_usuario);
+            printf("Matricula: %d\n",       emp.matricula_usuario);
+            printf("Retirada: %s\n",        emp.data_retirada);
+            printf("Prazo devolucao: %s\n", emp.data_prevista);
+            printf("----------------------------\n");
+        }
+    }
+    fclose(arq_emp);
+
+    // Se continuou 0, o livro existe mas não tem nenhum exemplar fora no momento
+    if(!achou_emprestimo){
+        printf("\nO livro '%s' nao possui emprestimos ativos no momento.\n", titulo_livro);
+    }
 }
 
 void LerUsuarios(usuario lista_usuarios[], int *tam_usuarios){
@@ -879,7 +980,9 @@ switch(opcao){
                     printf("\n [3] - Buscar livro");
                      printf("\n [4] - Editar livro");
                     printf("\n [5] - Remover livro");
-                    printf("\n [6] - Voltar ao Menu Principal\n");
+                    printf("\n [6] - Ver emprestimos ativos");
+                    printf("\n [7] - Voltar ao Menu Principal\n");
+                    
                     printf("Escolha uma opcao: ");
                     scanf("%d", &opcaoSecundar);
                     getchar();
@@ -891,29 +994,40 @@ switch(opcao){
           break;
                         }
     case 2:
-                            limpaTela();
-                            listarLivros();
-                            printf("\nPressione enter para voltar");
-                            getchar(); // Pausa para o usuário ler
-                            break;
+     limpaTela();
+     listarLivros();
+ printf("\nPressione enter para voltar");
+ getchar(); // Pausa para o usuário ler
+    break;
     case 3:
-                            buscarLivro();
-                            printf("\nPressione enter para voltar\n");
-                            break;
+    limpaTela();
+    buscarLivro();
+    printf("\nPressione enter para voltar\n");
+    getchar();
+    break;
      case 4:
-                            editarLivro();
-                            printf("\nPressione enter para voltar\n");
-                            getchar();
-                            break;
+    editarLivro();
+    printf("\nPressione enter para voltar\n");
+    getchar();
+        break;
 
     case 5:
-                         removerLivro();
-                            printf("\nPressione enter para voltar\n");
-                            getchar();
-                            break;
+        removerLivro();
+        printf("\nPressione enter para voltar\n");
+        getchar();
+        break;
+
+        case 6:
+         
+                     // passa o vetor de usuários para a função conseguir exibir os nomes
+        informarEmprestimosDoLivro(vetor_usuarios, total_usuarios);
+        printf("\nPressione enter para voltar\n");
+         getchar();
+            break;
          
          
-         case 6:
+         case 7:
+         
                   break; // sai do mneu secundario de livros
                         default:
                             printf("\nOpcao invalida!\n");
@@ -921,7 +1035,7 @@ switch(opcao){
                             getchar();
                             break;
                     }
-                } while(opcaoSecundar != 6);
+                } while(opcaoSecundar != 7);
                 break;
     case 2:
     do{
@@ -985,10 +1099,10 @@ switch(opcao){
     printf("opção 5 foi escolhida\n");
     break;
     case 6:
-    printf("opção 6 foi escolhida\n");
+    limpaTela();
     break;
     default:
-    printf("opção invalida\n");
+    printf("opcao 6 foi escolhida\n");
     break;
 }
 } while (opcao != 6); // O programa continua rodando ATÉ o usuário digitar 6
