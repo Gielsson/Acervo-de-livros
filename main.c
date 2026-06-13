@@ -46,25 +46,25 @@ void limpaTela(){ // FUNÇÃO QUE LIMPA A TELA
 // Lê um livro inteiro do arquivo e retorna a struct livro preencida.
 livro lerLivro(FILE *arq) {
     livro dado;
-    fscanf(arq, "%d\n",     &dado.codigo);
+    fscanf(arq, "%d\n", &dado.codigo);
     fscanf(arq, "%[^\n]\n", dado.titulo);
     fscanf(arq, "%[^\n]\n", dado.autor);
-    fscanf(arq, "%d\n",     &dado.ano_de_publi);
+    fscanf(arq, "%d\n", &dado.ano_de_publi);
     fscanf(arq, "%[^\n]\n", dado.genero);
-    fscanf(arq, "%d\n",     &dado.qtd_total);
-    fscanf(arq, "%d\n",     &dado.quant_disp);
-    fscanf(arq, "%d\n",     &dado.total_emprestimos);
+    fscanf(arq, "%d\n", &dado.qtd_total);
+    fscanf(arq, "%d\n", &dado.quant_disp);
+    fscanf(arq, "%d\n", &dado.total_emprestimos);
     return dado;
 }
 void gravarLivro(FILE *arq, livro dado){ // grava um livro no arquivo
-    fprintf(arq, "%d\n",  dado.codigo);
-    fprintf(arq, "%s\n",  dado.titulo);
-    fprintf(arq, "%s\n",  dado.autor);
-    fprintf(arq, "%d\n",  dado.ano_de_publi);
-    fprintf(arq, "%s\n",  dado.genero);
-    fprintf(arq, "%d\n",  dado.qtd_total);
-    fprintf(arq, "%d\n",  dado.quant_disp);
-    fprintf(arq, "%d\n",  dado.total_emprestimos);
+    fprintf(arq, "%d\n", dado.codigo);
+    fprintf(arq, "%s\n", dado.titulo);
+    fprintf(arq, "%s\n", dado.autor);
+    fprintf(arq, "%d\n", dado.ano_de_publi);
+    fprintf(arq, "%s\n", dado.genero);
+    fprintf(arq, "%d\n", dado.qtd_total);
+    fprintf(arq, "%d\n", dado.quant_disp);
+    fprintf(arq, "%d\n", dado.total_emprestimos);
 }
 // Percorre o arquivo inteiro para descobrir qual foi o último código gravado.
 int obterProximoCodigo(){ // descobre o ultimo id para gerar o proximo automaticamente
@@ -313,11 +313,11 @@ void editarLivro(){ // Permite alterar título, autor, gênero, ano e quantidade
     while(fscanf(arq_orig, "%d\n", &aux.codigo) != EOF){
         fscanf(arq_orig, "%[^\n]\n", aux.titulo);
         fscanf(arq_orig, "%[^\n]\n", aux.autor);
-        fscanf(arq_orig, "%d\n",     &aux.ano_de_publi);
+        fscanf(arq_orig, "%d\n", &aux.ano_de_publi);
         fscanf(arq_orig, "%[^\n]\n", aux.genero);
-        fscanf(arq_orig, "%d\n",     &aux.qtd_total);
-        fscanf(arq_orig, "%d\n",     &aux.quant_disp);
-        fscanf(arq_orig, "%d\n",     &aux.total_emprestimos);
+        fscanf(arq_orig, "%d\n", &aux.qtd_total);
+        fscanf(arq_orig, "%d\n", &aux.quant_disp);
+        fscanf(arq_orig, "%d\n", &aux.total_emprestimos);
  
         // Só edita o livro q o código bate com o digitado
         if(aux.codigo == cod_busca){
@@ -481,11 +481,11 @@ void informarEmprestimosDoLivro(usuario lista_usuarios[], int tam_usuarios){
     while(fscanf(arq_livros, "%d\n", &aux.codigo) != EOF){
         fscanf(arq_livros, "%[^\n]\n", aux.titulo);
         fscanf(arq_livros, "%[^\n]\n", aux.autor);
-        fscanf(arq_livros, "%d\n",     &aux.ano_de_publi);
+        fscanf(arq_livros, "%d\n", &aux.ano_de_publi);
         fscanf(arq_livros, "%[^\n]\n", aux.genero);
-        fscanf(arq_livros, "%d\n",     &aux.qtd_total);
-        fscanf(arq_livros, "%d\n",     &aux.quant_disp);
-        fscanf(arq_livros, "%d\n",     &aux.total_emprestimos);
+        fscanf(arq_livros, "%d\n", &aux.qtd_total);
+        fscanf(arq_livros, "%d\n", &aux.quant_disp);
+        fscanf(arq_livros, "%d\n", &aux.total_emprestimos);
 
         if(aux.codigo == cod_busca){
             livro_encontrado = 1;
@@ -513,12 +513,12 @@ void informarEmprestimosDoLivro(usuario lista_usuarios[], int tam_usuarios){
     int achou_emprestimo = 0; //se continuar 0 no final, nenhum empréstimo ativo foi achado
 
     while(fscanf(arq_emp, "%d\n", &emp.id) != EOF){
-        fscanf(arq_emp, "%d\n",     &emp.matricula_usuario);
-        fscanf(arq_emp, "%d\n",     &emp.codigo_livro);
+        fscanf(arq_emp, "%d\n", &emp.matricula_usuario);
+        fscanf(arq_emp, "%d\n", &emp.codigo_livro);
         fscanf(arq_emp, "%[^\n]\n", emp.data_retirada);
         fscanf(arq_emp, "%[^\n]\n", emp.data_prevista);
         fscanf(arq_emp, "%[^\n]\n", emp.data_devolucao);
-        fscanf(arq_emp, "%d\n",     &emp.devolvido);
+        fscanf(arq_emp, "%d\n", &emp.devolvido);
 
         // so interessa o livro certo e que ainda não foi devolvido, se devolvido == 0
         if(emp.codigo_livro == cod_busca && emp.devolvido == 0){
@@ -540,9 +540,9 @@ void informarEmprestimosDoLivro(usuario lista_usuarios[], int tam_usuarios){
             }
 
             printf("ID Emprestimo: %d\n",  emp.id);
-            printf("Usuario: %s\n",        nome_usuario);
-            printf("Matricula: %d\n",       emp.matricula_usuario);
-            printf("Retirada: %s\n",        emp.data_retirada);
+            printf("Usuario: %s\n", nome_usuario);
+            printf("Matricula: %d\n",  emp.matricula_usuario);
+            printf("Retirada: %s\n", emp.data_retirada);
             printf("Prazo devolucao: %s\n", emp.data_prevista);
             printf("----------------------------\n");
         }
