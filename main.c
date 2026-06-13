@@ -561,15 +561,12 @@ void LerUsuarios(usuario lista_usuarios[], int *tam_usuarios){
     if(arquivo == NULL){
         return;
     }
-
+ // le um usuario por vez ate chegar no fim do arquivo
     while(fscanf(arquivo, "%d\n", &lista_usuarios[*tam_usuarios].matricula) != EOF){
-        fscanf(arquivo, "%[^\n]\n",
-               lista_usuarios[*tam_usuarios].nome);
-        fscanf(arquivo, "%[^\n]\n",
-               lista_usuarios[*tam_usuarios].curso);
-        fscanf(arquivo, "%d\n",
-               &lista_usuarios[*tam_usuarios].qtd_emprestimos_ativos);
-            (*tam_usuarios)++;
+        fscanf(arquivo, "%[^\n]\n", lista_usuarios[*tam_usuarios].nome);
+        fscanf(arquivo, "%[^\n]\n", lista_usuarios[*tam_usuarios].curso);
+        fscanf(arquivo, "%d\n", &lista_usuarios[*tam_usuarios].qtd_emprestimos_ativos);
+    (*tam_usuarios)++; // avanca para a proxima posicao livre do vetor
     }
 
     fclose(arquivo);
@@ -583,7 +580,8 @@ int obterProximaMatricula(){
     }
 
     usuario info;
-    int ultimaMatricula = 202599;
+    int ultimaMatricula = 202599; // valor base: uma abaixo de 202600
+
 
     while(fscanf(arquivo, "%d\n", &info.matricula) != EOF){
         fscanf(arquivo, "%[^\n]\n", info.nome);
@@ -602,29 +600,30 @@ void cadastrarUsuario(usuario lista_usuarios[], int *tam_usuarios) {
     char continuar;
 
     do {
+        // impede cadastro se o vetor ja estiver cheio
         if (*tam_usuarios >= 1000) {
-            printf("\n❌ Erro: Limite de 1000 usuarios atingido!\n");
+            printf("\n Erro: Limite de 1000 usuarios atingido!\n");
             return;
         }
-
-        int posicao = *tam_usuarios; 
+ 
+        int posicao = *tam_usuarios; // proxima posicao livre no vetor
         printf("\n=== CADASTRO DE NOVO USUARIO ===\n");
-        
-        // salva os dados na estrutura dentro do VETOR (Memória RAM)
+ 
+        // gera a matricula automaticamente; o usuario nao precisa digitar
         lista_usuarios[posicao].matricula = obterProximaMatricula();
         printf("Matricula gerada: %d\n", lista_usuarios[posicao].matricula);
-        
+ 
         printf("Digite o nome completo: ");
         scanf(" %[^\n]", lista_usuarios[posicao].nome);
         getchar();
-        
+ 
         printf("Digite o curso: ");
         scanf(" %[^\n]", lista_usuarios[posicao].curso);
         getchar();
-        
-        lista_usuarios[posicao].qtd_emprestimos_ativos = 0;
+ 
+        lista_usuarios[posicao].qtd_emprestimos_ativos = 0; // novo usuario comeca sem emprestimos
 
-        // abre o arquivo para anexar o novo usuário
+         // abre o arquivo em modo "a" para adicionar ao final sem apagar os existentes
         FILE *arquivo = fopen("usuarios.txt", "a");
         if (arquivo == NULL) {
             printf("Erro ao abrir arquivo!\n");
@@ -640,7 +639,7 @@ void cadastrarUsuario(usuario lista_usuarios[], int *tam_usuarios) {
         printf("Usuario cadastrado com sucesso!\n");
         printf("================================\n");
         
-        // atualiza o contador geral da main
+        // atualiza o contador geral da main e so incrementa depois de gravar com sucesso
         (*tam_usuarios)++;
 
         printf("\nDeseja continuar cadastrando? (S/N): ");
@@ -653,7 +652,11 @@ void cadastrarUsuario(usuario lista_usuarios[], int *tam_usuarios) {
 void ListarUsuarios(usuario lista_usuarios[], int tam_usuarios){
 
     limpaTela();
-    printf("\n=== USUARIOS CADASTRADOS ===\n");
+     // avisa se ainda nao ha nenhum usuario no sistema
+    if (tam_usuarios == 0) {
+        printf("Nenhum usuario cadastrado ainda.\n");
+        return;
+    }
 
     for(int i=0;i < tam_usuarios;i++){
         printf("Nome: %s\n", lista_usuarios[i].nome);
@@ -661,9 +664,7 @@ void ListarUsuarios(usuario lista_usuarios[], int tam_usuarios){
         printf("Matricula: %d\n", lista_usuarios[i].matricula);
         printf("Emprestimos ativos: %d\n", lista_usuarios[i].qtd_emprestimos_ativos);
 desenhaBorda();
-    }
-
-    
+    }    
 }
 void buscarUsuario(usuario lista_usuarios[], int tam_usuarios) {
     limpaTela();
@@ -683,9 +684,9 @@ void buscarUsuario(usuario lista_usuarios[], int tam_usuarios) {
     scanf("%d", &tipo_busca);
     getchar(); // limpa o buffer
 
-    int mat_busca = -1;
+    int mat_busca = -1;           // -1 indica que nenhuma matricula foi digitada ainda
     char termo_busca[250] = "";
-
+	
     if (tipo_busca == 1) {
         printf("Digite a matricula do usuario: ");
         scanf("%d", &mat_busca);
@@ -719,7 +720,7 @@ void buscarUsuario(usuario lista_usuarios[], int tam_usuarios) {
             for(int j = 0; nome_minusculo[j]; j++) {
                 nome_minusculo[j] = tolower(nome_minusculo[j]);
             }
-            
+            // strstr retorna NULL se nao encontrar o termo dentro do nome
             if (strstr(nome_minusculo, termo_busca) != NULL) {
                 corresponde = 1;
             }
@@ -741,7 +742,7 @@ void buscarUsuario(usuario lista_usuarios[], int tam_usuarios) {
     }
 
     if (!encontrou) {
-        printf("\n❌ Nenhum usuario correspondente foi encontrado.\n");
+        printf("\n Nenhum usuario correspondente foi encontrado.\n");
     }
 }
 void informarLivrosEmprestadosDoUsuario(usuario lista_usuarios[], int tam_usuarios) {
@@ -755,18 +756,17 @@ void informarLivrosEmprestadosDoUsuario(usuario lista_usuarios[], int tam_usuari
     scanf("%d", &mat_busca);
     getchar();
 
-    // procura o usuário na memória (RAM) para confirmar se existe e pegar o nome
+    // primeiro confirma se a matricula existe no vetor em RAM
     int usuario_encontrado = 0;
     char nome_usuario[250] = "";
-
+ 
     for (int i = 0; i < tam_usuarios; i++) {
         if (lista_usuarios[i].matricula == mat_busca) {
             usuario_encontrado = 1;
-            strcpy(nome_usuario, lista_usuarios[i].nome);
+            strcpy(nome_usuario, lista_usuarios[i].nome); // guarda o nome para exibir
             break;
         }
     }
-
     if (!usuario_encontrado) {
         printf("\n Matricula %d nao encontrada no sistema.\n", mat_busca);
         return;
@@ -838,12 +838,12 @@ void informarLivrosEmprestadosDoUsuario(usuario lista_usuarios[], int tam_usuari
     }
 }
 void SalvarUsuarios(usuario lista_usuarios[], int tam_usuarios) {
-    FILE *arquivo = fopen("usuarios.txt", "w"); 
+    FILE *arquivo = fopen("usuarios.txt", "w"); // modo "w" apaga e recria o arquivo
     if (arquivo == NULL) {
         printf("\n Erro ao abrir o arquivo para salvar as atualizacoes!\n");
         return;
     }
-
+// grava todos os usuarios do vetor no arquivo, um por um
     for (int i = 0; i < tam_usuarios; i++) {
         fprintf(arquivo, "%d\n", lista_usuarios[i].matricula);
         fprintf(arquivo, "%s\n", lista_usuarios[i].nome);
@@ -868,36 +868,37 @@ void atualizarUsuario(usuario lista_usuarios[], int tam_usuarios) {
     scanf("%d", &mat_busca);
     getchar(); 
 
-    int indice = -1;
-
-    // busca o usuário na RAM
+    int indice = -1; // -1 indica que o usuario ainda nao foi encontrado
+ 
+    // busca sequencial no vetor para achar a posicao do usuario
     for (int i = 0; i < tam_usuarios; i++) {
         if (lista_usuarios[i].matricula == mat_busca) {
             indice = i;
             break;
         }
     }
-
+ 
     if (indice == -1) {
-        printf("\n❌ Matricula %d nao encontrada.\n", mat_busca);
+        printf("\n Matricula %d nao encontrada.\n", mat_busca);
         return;
     }
-
+ 
+    // exibe os dados atuais antes de perguntar os novos
     printf("\n--- Dados Atuais ---\n");
-    printf("Nome: %s\n", lista_usuarios[indice].nome);
+    printf("Nome: %s\n",  lista_usuarios[indice].nome);
     printf("Curso: %s\n", lista_usuarios[indice].curso);
     printf("--------------------\n");
 
     printf("\nDigite os novos dados:\n");
     printf("Novo Nome: ");
-    scanf(" %[^\n]", lista_usuarios[indice].nome);
+    scanf(" %[^\n]", lista_usuarios[indice].nome); // sobrescreve direto no vetor
     getchar();
 
     printf("Novo Curso: ");
     scanf(" %[^\n]", lista_usuarios[indice].curso);
     getchar();
 
-    // salva as alterações de volta no arquivo txt
+   // atualiza o arquivo com o vetor modificado
     SalvarUsuarios(lista_usuarios, tam_usuarios);
 
     printf("\n Dados atualizados com sucesso!\n");
