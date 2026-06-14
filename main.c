@@ -904,296 +904,577 @@ void atualizarUsuario(usuario lista_usuarios[], int tam_usuarios) {
     printf("\n Dados atualizados com sucesso!\n");
 }
 
-void realizarEmprestimo(usuario lista_usuarios[], int tam_usuarios, emprestimo lista_emprestimos[], int *tam_emprestimos);
-void realizarDevolucao(usuario lista_usuarios[], int tam_usuarios, livro lista_livros[], int tam_livros, emprestimo lista_emprestimos[], int tam_emprestimos);
 
-void realizarEmprestimo(usuario lista_usuarios[], int tam_usuarios, emprestimo lista_emprestimos[], int *tam_emprestimos){
+void realizarEmprestimo(usuario vetor_usuarios[], int total_usuarios, emprestimo vetor_emprestimos[], int *total_emprestimos);
+
+void realizarDevolucao(usuario vetor_usuarios[], int total_usuarios,  emprestimo vetor_emprestimos[], int total_emprestimos);
+
+void listarEmprestimosEmAtraso(emprestimo vetor_emprestimos[], int total_emprestimos, usuario vetor_usuarios[], int total_usuarios);
+
+void menuEmprestimos(usuario vetor_usuarios[], int total_usuarios, emprestimo vetor_emprestimos[], int *total_emprestimos);
+
+//Funcao realizarEmprestimo
+void realizarEmprestimo(usuario vetor_usuarios[], int total_usuarios,emprestimo vetor_emprestimos[], int *total_emprestimos) {
+    (void)vetor_emprestimos;
+
     int mat_busca;
     int cod_busca;
-    int index_usuario = -1; // Começa com -1 para indicar que não encontrou
+    int index_usuario = -1; //Começa com -1 para indicar que não encontrou
+    int index_livro   = -1; //O mesmo para o livro
 
     limpaTela();
     desenhaBorda();
-    printf("\n📚 EFETUAR NOVO EMPRÉSTIMO 📚\n");
+    printf("\n  📚  EFETUAR NOVO EMPRESTIMO  📚\n");
     desenhaBorda();
 
-    //1. COleta dados de quem está solicitando o empréstimo
-    printf("Digite a matricula do usuário: ");
+    //ETAPA 1 — Verificar se o usuário existe e está habilitado
+    printf("Digite a matricula do usuario: ");
     scanf("%d", &mat_busca);
 
-    //Busca sequencial no vetor de usuários cadastrados 
-    for (int i=0; i<tam_usuarios; i++){
-        if (lista_usuarios[i]. matricula == mat_busca){
-            index_usuario = i; //Guarda a posição exata onde o usuário foi encontrado 
-            break; //Encerra a busca, já que encontrou o usuário
+    //Busca sequencial no vetor de usuarios cadastrados.
+    for (int i = 0; i < total_usuarios; i++) {
+        if (vetor_usuarios[i].matricula == mat_busca) {
+            index_usuario = i; // Guarda a posicao exata onde o usuario foi encontrado 
+            break;             //Encerra a busca assim que encontrar 
         }
     }
 
-//Se o índice continuar -1, o usuário não existe no sistema 
-    if (index_usuario == -1){
-    printf("\n❌ Erro: Usuario com a matricula %d não está cadastrado!\n", mat_busca);
-    printf("Pressione Enter para voltar ao menu.");
-    getchar(); getchar(); //Aguarda o usuário pressionar Enter
-    return; //Finaliza a função (aborta o empréstimo)
+    // Se o índice continuar -1, o usuario nao existe no sistema
+    if (index_usuario == -1) {
+        printf("\n❌ Erro: Usuario com a matricula %d nao esta cadastrado!\n", mat_busca);
+        printf("Pressione Enter para voltar ao menu.");
+        // Limpa o '\n' deixado pelo scanf antes de aguardar o Enter 
+        while (getchar() != '\n');
+        getchar();
+        return; // Finaliza a funcao (aborta o emprestimo)
     }
 
-//Aplicação do limite de 3 livros ativos 
-    if (lista_usuarios[index_usuario]. qtd_emprestimos_ativos >= 3){
-    printf("\n ❌  Erro: o usuario %s já atingiu o limite de 3 emprestimos ativos!\n", lista_usuarios[index_usuario]. nome);
-    printf("Não é permitido realizar mais empréstimos até que um livro seja devolvido.");
-    printf("Pressione Enter para voltar ao menu.");
-    getchar(); getchar(); //Aguarda o usuário pressionar Enter
-    return; //(aborta o empréstimo)
+    //Aplicacao do limite de 3 livros ativos por usuario 
+    if (vetor_usuarios[index_usuario].qtd_emprestimos_ativos >= 3) {
+        printf("\n❌ Erro: o usuario %s ja atingiu o limite de 3 emprestimos ativos!\n",
+               vetor_usuarios[index_usuario].nome);
+        printf("Nao e permitido realizar mais emprestimos ate que um livro seja devolvido.\n");
+        printf("Pressione Enter para voltar ao menu.");
+        while (getchar() != '\n');
+        getchar();
+        return; // Aborta o emprestimo 
     }
 
-    printf("\n Usuario liberado para realizar o empréstimo! \n");
+    printf("\n✅ Usuario %s liberado para realizar o emprestimo!\n",
+           vetor_usuarios[index_usuario].nome);
 
+    //ETAPA 2 — Verificar se o livro existe e tem exemplar disponivel
+    printf("\nDigite o codigo do livro desejado: ");
+    scanf("%d", &cod_busca);
 
-livro l_busca; //Variável temporária para ler os dados do arquivo 
-int livro_encontrado = 0; //Flag para indicar se o livro foi encontrado
+    livro l_temp;
+    int achou = 0;
 
-printf("\nDigite o codigo do livro desejado: ");
-scanf("%d", &cod_busca);
+    FILE *arq_livros = fopen("livros.txt", "r");
+    if (arq_livros == NULL) {
+    printf("\n❌ Erro ao abrir arquivo de livros!\n");
+    return;
+    }
 
-//Abre o arquivo de livros em modo de leitura 
-FILE *arq_livros = fopen("livros.txt", "r");
+    // busca no arquivo
+    while (fscanf(arq_livros,
+              "%d\n%[^\n]\n%[^\n]\n%d\n%[^\n]\n%d\n%d\n%d\n",
+              &l_temp.codigo,
+              l_temp.titulo,
+              l_temp.autor,
+              &l_temp.ano_de_publi,
+              l_temp.genero,
+              &l_temp.qtd_total,
+              &l_temp.quant_disp,
+              &l_temp.total_emprestimos) == 8) {
 
-if (arq_livros == NULL){
-    printf("\n❌ Erro: Não foi possível abrir o arquivo de livros!\n");
+        if (l_temp.codigo == cod_busca) {
+        achou = 1;
+        break;
+        }
+    }
+
+    fclose(arq_livros);
+
+    // Livro nao encontrado
+    if (!achou) {
+    printf("\n❌ Erro: Codigo de livro %d nao encontrado no sistema!\n", cod_busca);
     printf("Pressione Enter para voltar.");
-    getchar(); getchar(); //Aguarda o usuário pressionar Enter
-    return; //Aborta a função
-}
+    while (getchar() != '\n');
+    getchar();
+    return;
+    }
 
-//Varre o arquivo linha por linha até o Fim do Arquivo (EOF)
-while (fscanf(arq_livros, "%d", &l_busca.codigo) != EOF){
-    //Lê os demais campos do livro do atual arquivo
-    fscanf(arq_livros, " %[^\n]\n", l_busca.titulo);
-    fscanf(arq_livros, " %[^\n]\n", l_busca.autor);
-    fscanf(arq_livros, " %d\n", &l_busca.ano_de_publi);
-    fscanf(arq_livros, " %[^\n]\n", l_busca.genero); 
-    fscanf(arq_livros, " %d\n", &l_busca.qtd_total);
-    fscanf(arq_livros, " %d\n", &l_busca.quant_disp);
-    fscanf(arq_livros, " %d\n", &l_busca.total_emprestimos);
+    // Verifica estoque
+    if (l_temp.quant_disp <= 0) {
+    printf("\n❌ Erro: O livro '%s' esta esgotado no momento!\n", l_temp.titulo);
+    printf("Nao ha exemplares disponiveis para emprestimo.\n");
+    printf("Pressione Enter para voltar.");
+    while (getchar() != '\n');
+    getchar();
+    return;
+    }
 
-    //Se o código lido for o mesmo que o usuário digitou
+    printf("\n✅ Livro '%s' disponivel! Registrando emprestimo...\n", l_temp.titulo);
 
-    if (l_busca.codigo == cod_busca){
-        livro_encontrado = 1; //Marca que o livro foi encontrado
-    
-        //Verificar se há exemplares disponíveis para empréstimo
-        if (l_busca.quant_disp <= 0){
-            printf("\n❌ Erro: O livro '%s' está esgotado no momento!\n", l_busca.titulo);
-            printf("Não há exemplares disponíveis para emprestimo.\n");
-            fclose(arq_livros); //Fecha o arquivo antes de retornar
-            printf("Pressione Enter para voltar.");
-            getchar(); getchar();
-            return; //Aborta o empréstimo
+    //ETAPA 3 — Gerar datas automaticas (retirada e prazo de 14 dias)
+    time_t t = time(NULL);
+    struct tm *info_tempo = localtime(&t);
+
+    char data_retirada[11];
+    char data_prevista[11];
+
+    //Formata a data atual do sistema no formato DD/MM/AAAA 
+    strftime(data_retirada, sizeof(data_retirada), "%d/%m/%Y", info_tempo);
+
+    // Soma 14 dias em segundos (14 * 24h * 60min * 60seg) e recalcula 
+    t += 14 * 24 * 60 * 60;
+    info_tempo = localtime(&t);
+
+    // Formata a data prevista de devolucao 
+    strftime(data_prevista, sizeof(data_prevista), "%d/%m/%Y", info_tempo);
+
+    //ETAPA 4 — Gravar o novo emprestimo no arquivo emprestimos.txt
+    FILE *arq_emp = fopen("emprestimos.txt", "a");
+    if (arq_emp == NULL) {
+        printf("\n❌ Erro: Nao foi possivel abrir ou criar 'emprestimos.txt'!\n");
+        printf("Pressione Enter para voltar.");
+        while (getchar() != '\n');
+        getchar();
+        return;
+    }
+
+    // O ID do novo emprestimo e o total atual + 1 
+    int novo_id = *total_emprestimos + 1;
+
+    //Grava os campos na ordem definida pela struct emprestimo
+    fprintf(arq_emp, "%d\n",  novo_id);
+    fprintf(arq_emp, "%d\n",  mat_busca);
+    fprintf(arq_emp, "%d\n",  cod_busca);
+    fprintf(arq_emp, "%s\n",  data_retirada);
+    fprintf(arq_emp, "%s\n",  data_prevista);
+    fprintf(arq_emp, "00/00/0000\n"); // Data de devolucao real: vazia inicialmente
+    fprintf(arq_emp, "0\n");          //Status devolvido: 0 = nao devolvido
+
+    fclose(arq_emp); //Fecha o arquivo de emprestimos
+
+    //ETAPA 5 — Atualizar o estoque do livro
+    FILE *arq = fopen("livros.txt", "r");
+    FILE *temp = fopen("temp.txt", "w");
+
+    if (arq == NULL || temp == NULL) {
+    printf("\n❌ Erro ao abrir arquivos de livros!\n");
+    return;
+    }
+
+    livro l;
+
+    while (fscanf(arq,
+              "%d\n%[^\n]\n%[^\n]\n%d\n%[^\n]\n%d\n%d\n%d\n",
+              &l.codigo,
+              l.titulo,
+              l.autor,
+              &l.ano_de_publi,
+              l.genero,
+              &l.qtd_total,
+              &l.quant_disp,
+              &l.total_emprestimos) == 8) {
+
+        if (l.codigo == cod_busca) {
+        l.quant_disp--;
+        l.total_emprestimos++;
         }
 
-        break; //Encerra a busca, já que encontrou o livro
+        fprintf(temp,
+            "%d\n%s\n%s\n%d\n%s\n%d\n%d\n%d\n",
+            l.codigo,
+            l.titulo,
+            l.autor,
+            l.ano_de_publi,
+            l.genero,
+            l.qtd_total,
+            l.quant_disp,
+            l.total_emprestimos);
     }
-}
-fclose(arq_livros); //Fecha o arquivo de leitura
 
-//Se a flag continuou 0, o livro não existe no sistema
-if (livro_encontrado == 0){
-    printf("\n❌ Erro: Código de livro %d não encontrado no sistema!\n", cod_busca);
-    printf("Pressione Enter para voltar.");
-    getchar(); getchar();
-    return; //Aborta o empréstimo
-} 
+    fclose(arq);
+    fclose(temp);
 
-printf("\nLivro '%s' disponível! Pronto para registrar o empréstimo \n", l_busca.titulo);
+    remove("livros.txt");
+    rename("temp.txt", "livros.txt");
 
-//Gerar datas automáticas 
-time_t t = time(NULL);
-struct tm *info_tempo = localtime(&t);
+    // 6 — Atualizar o contador do usuario em memoria
+    vetor_usuarios[index_usuario].qtd_emprestimos_ativos++; //+1 emprestimo ativo 
+    (*total_emprestimos)++;                                    // +1 no total do sistema
 
-char data_retirada[11];
-char data_prevista[11];
+    // ETAPA 7 — Exibir recibo de confirmacao
+    desenhaBorda();
+    printf("  🤝  EMPRESTIMO REGISTRADO COM SUCESSO!\n");
+    desenhaBorda();
+    printf("  🔹 ID da Operacao:       %d\n",   novo_id);
+    printf("  🔹 Usuario:              %s (Matricula: %d)\n",
+           vetor_usuarios[index_usuario].nome, mat_busca);
+    printf("  🔹 Livro Retirado:       %s (Codigo: %d)\n",
+           l_temp.titulo, cod_busca);
+    printf("  🔹 Data de Retirada:     %s\n",   data_retirada);
+    printf("  🔹 Prazo Maximo:         %s (14 dias)\n", data_prevista);
+    printf("  🔹 Emprestimos ativos:   %d/3\n",
+           vetor_usuarios[index_usuario].qtd_emprestimos_ativos);
+    desenhaBorda();
 
-//Formata a data atual do sistema para o formato DD/MM/AAAA
-strftime(data_retirada, sizeof(data_retirada), "%d/%m/%Y", info_tempo);
-
-//Soma o prazo de 14 dias em segundos (14 dias * 24 horas * 60 minutos * 60 segundos)
-t += 14 * 24 * 60 * 60;
-info_tempo = localtime(&t); //Atualiza a estrutura de tempo com a nova
-
-//Formata a data prevista para devolução
-strftime(data_prevista, sizeof(data_prevista), "%d/%m/%Y", info_tempo); 
-
-FILE *arq_emp = fopen("emprestimos.txt", "a");
-if (arq_emp == NULL){
-    printf("\n❌ Erro: Não foi possível abrir ou criar o arquivo  'emprestimos.txt'!\n");
-    printf("Pressione Enter para voltar.");
-    getchar(); getchar();
-    return; 
-}
-
-// O ID do novo empréstimo será o número total de empréstimos já registrados + 1
-int novo_id = *tam_emprestimos + 1;
-
-//Grava no arquivo conforme os campos definidos na struct emprestimo
-fprintf(arq_emp, "%d\n", novo_id);
-fprintf(arq_emp, "%d\n", mat_busca);
-fprintf(arq_emp, "%d\n", cod_busca);
-fprintf(arq_emp, "%s\n", data_retirada);
-fprintf(arq_emp, "%s\n", data_prevista);
-fprintf(arq_emp, "00/00/0000\n"); //Data de devolução real inicialmente vazia
-fprintf(arq_emp, "0\n"); //Status de devolução inicialmente 0 (não devolvido)
-
-fclose(arq_emp); //Fecha o arquivo de empréstimos
-
-//Atualizar dados na memoria 
-lista_usuarios[index_usuario]. qtd_emprestimos_ativos += 1; //Incrementa a quantidade de empréstimos ativos do usuário
-(*tam_emprestimos)++; //Incrementa o total de empréstimos registrados no sistema
-
-//Imprimir recibo de sucesso 
-    printf("     🤝 EMPRÉSTIMO CONFIGURADO COM SUCESSO!       \n");
-    printf("  🔹 ID da Operação:    %d\n", novo_id);
-    printf("  🔹 Usuário Beneficiário: %s (Matrícula: %d)\n", lista_usuarios[index_usuario].nome, mat_busca);
-    printf("  🔹 Livro Retirado:    %s\n", l_busca.titulo);
-    printf("  🔹 Data de Retirada:  %s\n", data_retirada);
-    printf("  🔹 Prazo Máximo:      %s (14 dias)\n", data_prevista);
-    printf("==================================================\n");
-    
     printf("\nPressione Enter para concluir e retornar ao menu...");
-    getchar(); getchar();
+    while (getchar() != '\n');
+    getchar();
 
-} //fecha a função realizarEmprestimo
+} //fecha realizarEmprestimo 
 
-void realizarDevolucao(usuario lista_usuarios[], int tam_usuarios, livro lista_livros[], int tam_livros, emprestimo lista_emprestimos[], int tam_emprestimos){
+
+//Funcao realizarDevolucao
+void realizarDevolucao(usuario vetor_usuarios[], int total_usuarios, emprestimo vetor_emprestimos[], int total_emprestimos) {
+
     int id_busca;
-    int emprestimo_encontrado = 0; //Flag para indicar se o empréstimo foi encontrado
-    emprestimo emp_temp; //Variável temporária para ler os dados do arquivo de empréstimos
+    int emprestimo_encontrado = 0; //Flag: 0 = nao encontrou, 1 = encontrou 
+    emprestimo emp_temp;           //Variavel temporaria para leitura do arquivo
 
     limpaTela();
     desenhaBorda();
-    printf("\n↩️    REGISTRAR DEVOLUÇÃO DE LIVRO    ↩️\n");
+    printf("\n  ↩️   REGISTRAR DEVOLUCAO DE LIVRO   ↩️\n");
     desenhaBorda();
 
     printf("Digite o ID do emprestimo (Protocolo): ");
     scanf("%d", &id_busca);
 
-    //Abre o arquivo de empréstimos em modo de leitura para verificar se o empréstimo existe 
+    //ETAPA 1 — Abrir o arquivo de emprestimos para leitura e criar um arquivo temporario para reescrita
     FILE *arq_emp = fopen("emprestimos.txt", "r");
-    if (arq_emp == NULL){
-        printf("\n❌ Erro: Não há empréstimos registrados no sistema!\n");
+    if (arq_emp == NULL) {
+        printf("\n❌ Erro: Nao ha emprestimos registrados no sistema!\n");
         printf("Pressione Enter para voltar.");
-        getchar(); getchar();
-        return; 
+        while (getchar() != '\n');
+        getchar();
+        return;
     }
 
-//Criaremos um arquivo temporário para salvar as alterações do arquivo de empréstimos
-FILE *arq_temp = fopen("temp_emprestimos.txt", "w");
-
-//Varre o arquivo procurando pelo ID 
-while (fscanf(arq_emp, "%d", &emp_temp.id) != EOF){
-fscanf(arq_emp," %[^\n]\n", emp_temp.data_retirada);
-fscanf(arq_emp," %[^\n]\n", emp_temp.data_prevista);
-fscanf(arq_emp," %[^\n]\n", emp_temp.data_devolucao);
-fscanf(arq_emp," %d\n", &emp_temp.devolvido);
-
-//Se achou o ID digitado e o livro ainda NÃO foi devolvido
-if (emp_temp.id == id_busca && emp_temp.devolvido == 0){
-    emprestimo_encontrado = 1; 
-    emp_temp.devolvido = 1; //Marca como devolvido
-
-    //Pega a data atual do sistema para registrar a data de devolução real
-    time_t t = time(NULL);
-    struct tm *info_tempo = localtime(&t);
-    strftime(emp_temp.data_devolucao, sizeof(emp_temp.data_devolucao), "%d/%m/%Y", info_tempo);
-}
-
-//Grava os dados (alterados ou não) no arquivo temporário
-fprintf(arq_temp, "%d\n%d\n%d\n%s\n%s\n%s\n%d\n", 
-        emp_temp.id, 
-        emp_temp.matricula_usuario, 
-        emp_temp.codigo_livro, 
-        emp_temp.data_retirada, 
-        emp_temp.data_prevista, 
-        emp_temp.data_devolucao, 
-        emp_temp.devolvido);
-}
-
-fclose(arq_emp);
-fclose(arq_temp);
-
-//Substitui o arquivo antigo pelo atualizado
-remove("emprestimos.txt");
-rename("temp_emprestimos.txt", "emprestimos.txt");
-
-//Se a flag continuar 0, o empréstimo não foi encontrado ou já tinha sido devolvido anteriormente
-if (emprestimo_encontrado == 0){
-    printf("\n❌ Erro: Emprestimo com ID %d não encontrado ou já foi devolvido!\n", id_busca);
-    printf("Pressione Enter para voltar.");
-    getchar(); getchar();
-    return;
-}
-
-///Atualização do estoque do livro no arquivo "livros.txt
-livro liv_temp; //Variável temporária para ler os dados do arquivo de livros
-FILE *arq_livros = fopen("livros.txt", "r");
-FILE *arq_livros_temp = fopen("temp_livros.txt", "w");
-
-if (arq_livros != NULL && arq_livros_temp != NULL){
-    // Varre o arquivo de livros copiando os dados para o temporário
-     while (fscanf(arq_livros, "%d", &liv_temp.codigo) != EOF){
-        fscanf(arq_livros, " %[^\n]", liv_temp.titulo);
-        fscanf(arq_livros, " %[^\n]", liv_temp.autor);
-        fscanf(arq_livros, " %d\n", &liv_temp.ano_de_publi);
-        fscanf(arq_livros, " %[^\n]", liv_temp.genero); 
-        fscanf(arq_livros, " %d\n", &liv_temp.qtd_total);
-        fscanf(arq_livros, " %d\n", &liv_temp.quant_disp);
-        fscanf(arq_livros, " %d\n", &liv_temp.total_emprestimos);
-
-//Se o livro for devolvido neste empréstimo, incrementa o estoque disponível 
-if (liv_temp.codigo == emp_temp.codigo_livro){
-    liv_temp.quant_disp += 1;
-}
-
-//Grava o registro no arquivo temporário de livros 
-fprintf(arq_livros_temp, "%d\n%s\n%s\n%d\n%s\n%d\n%d\n%d\n", 
-        liv_temp.codigo, 
-        liv_temp.titulo, 
-        liv_temp.autor, 
-        liv_temp.ano_de_publi, 
-        liv_temp.genero, 
-        liv_temp.qtd_total, 
-        liv_temp.quant_disp, 
-        liv_temp.total_emprestimos);
+    //Arquivo temporario onde os dados atualizados serao gravados 
+    FILE *arq_temp = fopen("temp_emprestimos.txt", "w");
+    if (arq_temp == NULL) {
+        printf("\n❌ Erro: Nao foi possivel criar arquivo temporario!\n");
+        fclose(arq_emp);
+        printf("Pressione Enter para voltar.");
+        while (getchar() != '\n');
+        getchar();
+        return;
     }
 
-    fclose(arq_livros);
-    fclose(arq_livros_temp);
+    //ETAPA 2 — Varrer o arquivo procurando pelo ID informado
+    while (fscanf(arq_emp, "%d\n", &emp_temp.id) == 1) {
 
-    //Substitui o arquivo antigo pelo atualizado
-    remove("livros.txt");
-    rename("temp_livros.txt", "livros.txt");
-}
+        fscanf(arq_emp, "%d\n",      &emp_temp.matricula_usuario);
+        fscanf(arq_emp, "%d\n",      &emp_temp.codigo_livro);
+        fscanf(arq_emp, "%10[^\n]\n", emp_temp.data_retirada);
+        fscanf(arq_emp, "%10[^\n]\n", emp_temp.data_prevista);
+        fscanf(arq_emp, "%10[^\n]\n", emp_temp.data_devolucao);
+        fscanf(arq_emp, "%d\n",      &emp_temp.devolvido);
 
-//Atualização do contador do usuário na memória 
-for (int i=0; i<tam_usuarios; i++){
-    if (lista_usuarios[i].matricula == emp_temp.matricula_usuario){
-        if (lista_usuarios[i].qtd_emprestimos_ativos > 0) {
-            lista_usuarios[i].qtd_emprestimos_ativos -= 1;
+        // Se achou o ID e o livro ainda NAO foi devolvido
+        if (emp_temp.id == id_busca && emp_temp.devolvido == 0) {
+            emprestimo_encontrado = 1;
+
+            emp_temp.devolvido = 1; //Marca como devolvido
+
+            //Registra a data real de devolucao com a data atual do sistema
+            time_t t = time(NULL);
+            struct tm *info_tempo = localtime(&t);
+            strftime(emp_temp.data_devolucao,
+                     sizeof(emp_temp.data_devolucao),
+                     "%d/%m/%Y", info_tempo);
         }
-        break; //Encerra o loop após encontrar o usuário
-    }
-}
 
-//Mensagem de sucesso final e recibo da operação 
-    printf("     🤝 DEVOLUÇÃO REGISTRADA COM SUCESSO!       \n");
-    printf("  🔹 ID do Empréstimo:   %d\n", emp_temp.id);
-    printf("  🔹 Código do Livro:    %d\n", emp_temp.codigo_livro);
-    printf("  🔹 Matrícula do Aluno: %d\n", emp_temp.matricula_usuario);
-    printf("  🔹 Data de Devolução:  %s\n", emp_temp.data_devolucao);
+        //Grava o registro (alterado ou nao) no arquivo temporario 
+        fprintf(arq_temp, "%d\n%d\n%d\n%s\n%s\n%s\n%d\n",
+                emp_temp.id,
+                emp_temp.matricula_usuario,
+                emp_temp.codigo_livro,
+                emp_temp.data_retirada,
+                emp_temp.data_prevista,
+                emp_temp.data_devolucao,
+                emp_temp.devolvido);
+    }
+
+    fclose(arq_emp);
+    fclose(arq_temp);
+
+    //Substitui o arquivo original pelo temporario atualizado
+    remove("emprestimos.txt");
+    rename("temp_emprestimos.txt", "emprestimos.txt");
+
+    //ETAPA 3 — Verificar se o emprestimo realmente existia
+    if (emprestimo_encontrado == 0) {
+        printf("\n❌ Erro: Emprestimo com ID %d nao encontrado ou ja foi devolvido!\n",
+               id_busca);
+        printf("Pressione Enter para voltar.");
+        while (getchar() != '\n');
+        getchar();
+        return;
+    }
+
+    // 4 — Atualizar o vetor de emprestimos em memoria
+    for (int i = 0; i < total_emprestimos; i++) {
+        if (vetor_emprestimos[i].id == id_busca) {
+            vetor_emprestimos[i].devolvido = 1;
+            strcpy(vetor_emprestimos[i].data_devolucao, emp_temp.data_devolucao);
+            break;
+        }
+    }
+
+    //ETAPA 5 — Atualizar o estoque do livro
+    FILE *arq = fopen("livros.txt", "r");
+    FILE *temp = fopen("temp.txt", "w");
+
+    if (arq == NULL || temp == NULL) {
+    printf("\n❌ Erro ao abrir arquivo de livros!\n");
+    return;
+    }
+
+    livro l;
+
+    while (fscanf(arq,
+              "%d\n%[^\n]\n%[^\n]\n%d\n%[^\n]\n%d\n%d\n%d\n",
+              &l.codigo,
+              l.titulo,
+              l.autor,
+              &l.ano_de_publi,
+              l.genero,
+              &l.qtd_total,
+              &l.quant_disp,
+              &l.total_emprestimos) == 8) {
+
+    if (l.codigo == emp_temp.codigo_livro) {
+        l.quant_disp++; // devolve exemplar
+    }
+
+    fprintf(temp,
+            "%d\n%s\n%s\n%d\n%s\n%d\n%d\n%d\n",
+            l.codigo,
+            l.titulo,
+            l.autor,
+            l.ano_de_publi,
+            l.genero,
+            l.qtd_total,
+            l.quant_disp,
+            l.total_emprestimos);
+    }
+
+    fclose(arq);
+    fclose(temp);
+
+    remove("livros.txt");
+    rename("temp.txt", "livros.txt");
+
+    //ETAPA 6 — Atualizar o contador de emprestimos do usuario na memoria (e regravar usuarios.txt)
+    for (int i = 0; i < total_usuarios; i++) {
+        if (vetor_usuarios[i].matricula == emp_temp.matricula_usuario) {
+            if (vetor_usuarios[i].qtd_emprestimos_ativos > 0) {
+                vetor_usuarios[i].qtd_emprestimos_ativos--; // -1 emprestimo ativo
+            }
+            break; //Encerra o loop apos encontrar o usuario
+        }
+    }
+
+    //Regrava usuarios.txt com o contador atualizado
+    FILE *arq_usuarios = fopen("usuarios.txt", "w");
+    if (arq_usuarios != NULL) {
+        for (int i = 0; i < total_usuarios; i++) {
+            fprintf(arq_usuarios, "%d\n%s\n%s\n%d\n",
+                    vetor_usuarios[i].matricula,
+                    vetor_usuarios[i].nome,
+                    vetor_usuarios[i].curso,
+                    vetor_usuarios[i].qtd_emprestimos_ativos);
+        }
+        fclose(arq_usuarios);
+    }
+
+    //ETAPA 7 — Exibir recibo de confirmacao
+    desenhaBorda();
+    printf("  🤝  DEVOLUCAO REGISTRADA COM SUCESSO!\n");
+    desenhaBorda();
+    printf("  🔹 ID do Emprestimo:    %d\n",  emp_temp.id);
+    printf("  🔹 Codigo do Livro:     %d\n",  emp_temp.codigo_livro);
+    printf("  🔹 Matricula do Aluno:  %d\n",  emp_temp.matricula_usuario);
+    printf("  🔹 Data de Retirada:    %s\n",  emp_temp.data_retirada);
+    printf("  🔹 Prazo era:           %s\n",  emp_temp.data_prevista);
+    printf("  🔹 Data de Devolucao:   %s\n",  emp_temp.data_devolucao);
+    desenhaBorda();
 
     printf("\nPressione Enter para concluir e retornar ao menu...");
-    getchar(); getchar();
+    while (getchar() != '\n');
+    getchar();
 
-} // fecha a função realizarDevolucao
+} //fecha realizarDevolucao
+
+
+//Funcao listarEmprestimosEmAtraso
+
+void listarEmprestimosEmAtraso(emprestimo vetor_emprestimos[], int total_emprestimos, usuario vetor_usuarios[], int total_usuarios) {
+    limpaTela();
+    desenhaBorda();
+    printf("\n  ⏰  EMPRESTIMOS EM ATRASO  ⏰\n");
+    desenhaBorda();
+
+    //Obtém a data atual do sistema no formato DD/MM/AAAA
+    char data_hoje[11];
+    time_t t = time(NULL);
+    struct tm *info_tempo = localtime(&t);
+    strftime(data_hoje, sizeof(data_hoje), "%d/%m/%Y", info_tempo);
+
+    printf("Data de hoje: %s\n\n", data_hoje);
+
+    // Converte a data de hoje para o formato AAAAMMDD para comparacao.
+    char hoje_ord[9]; 
+    hoje_ord[0] = data_hoje[6]; hoje_ord[1] = data_hoje[7];
+    hoje_ord[2] = data_hoje[8]; hoje_ord[3] = data_hoje[9]; //ano
+    hoje_ord[4] = data_hoje[3]; hoje_ord[5] = data_hoje[4]; //mes
+    hoje_ord[6] = data_hoje[0]; hoje_ord[7] = data_hoje[1]; //dia
+    hoje_ord[8] = '\0';
+
+    int qtd_atraso = 0; //Contador de emprestimos em atraso encontrados
+
+    //Percorre todos os emprestimos registrados
+    for (int i = 0; i < total_emprestimos; i++) {
+
+        //Ignora emprestimos ja devolvidos
+        if (vetor_emprestimos[i].devolvido == 1) {
+            continue;
+        }
+
+        //Converte a data_prevista do emprestimo para o formato AAAAMMDD
+        char *dp = vetor_emprestimos[i].data_prevista; //alias para facilitar leitura 
+        char prev_ord[9];
+        prev_ord[0] = dp[6]; prev_ord[1] = dp[7];
+        prev_ord[2] = dp[8]; prev_ord[3] = dp[9]; //ano 
+        prev_ord[4] = dp[3]; prev_ord[5] = dp[4]; //mes 
+        prev_ord[6] = dp[0]; prev_ord[7] = dp[1]; //dia 
+        prev_ord[8] = '\0';
+
+        // Compara: se a data prevista for ANTERIOR a hoje, esta em atraso. 
+        if (strcmp(prev_ord, hoje_ord) < 0) {
+
+            //Busca o nome do usuario pelo numero de matricula
+            char *nome_usuario = "Desconhecido";
+            for (int j = 0; j < total_usuarios; j++) {
+                if (vetor_usuarios[j].matricula == vetor_emprestimos[i].matricula_usuario) {
+                    nome_usuario = vetor_usuarios[j].nome;
+                    break;
+                }
+            }
+
+            //Busca o titulo do livro pelo codigo
+            char titulo_livro[250] = "Desconhecido";
+
+            FILE *arq_livros = fopen("livros.txt", "r");
+            if (arq_livros != NULL) {
+
+                livro l;
+
+                while (fscanf(arq_livros,
+                             "%d\n%[^\n]\n%[^\n]\n%d\n%[^\n]\n%d\n%d\n%d\n",
+                            &l.codigo,
+                            l.titulo,
+                            l.autor,
+                            &l.ano_de_publi,
+                            l.genero,
+                            &l.qtd_total,
+                            &l.quant_disp,
+                            &l.total_emprestimos) == 8) {
+
+                    if (l.codigo == vetor_emprestimos[i].codigo_livro) {
+                        strcpy(titulo_livro, l.titulo);
+                        break;
+                    }
+                }
+
+            fclose(arq_livros);
+}
+
+            //Exibe as informacoes do emprestimo em atraso 
+            printf("  🔴 ID: %-4d | Matricula: %-6d | Usuario: %s\n",
+                   vetor_emprestimos[i].id,
+                   vetor_emprestimos[i].matricula_usuario,
+                   nome_usuario);
+            printf("         Livro: %s (Cod. %d)\n",
+                   titulo_livro,
+                   vetor_emprestimos[i].codigo_livro);
+            printf("         Retirada: %s | Prazo era: %s\n",
+                   vetor_emprestimos[i].data_retirada,
+                   vetor_emprestimos[i].data_prevista);
+            printf("  --------------------------------------------------\n");
+
+            qtd_atraso++;
+        }
+    }
+
+    //Mensagem final com o total encontrado 
+    if (qtd_atraso == 0) {
+        printf("  ✅ Nenhum emprestimo em atraso no momento.\n");
+    } else {
+        printf("\n  Total de emprestimos em atraso: %d\n", qtd_atraso);
+    }
+
+    desenhaBorda();
+    printf("\nPressione Enter para voltar ao menu...");
+    while (getchar() != '\n');
+    getchar();
+
+} // fecha listarEmprestimosEmAtraso
+
+
+//Funcao menuEMprestimos 
+void menuEmprestimos(usuario vetor_usuarios[], int total_usuarios, emprestimo vetor_emprestimos[], int *total_emprestimos) {
+    int opcao;
+
+    do {
+        limpaTela();
+        desenhaBorda();
+        printf("\n  📋  GERENCIAR EMPRESTIMOS \n");
+        desenhaBorda();
+        printf("  1. Realizar emprestimo\n");
+        printf("  2. Listar emprestimos em atraso\n");
+        printf("  0. Voltar ao menu principal\n");
+        desenhaBorda();
+        printf("  Opcao: ");
+        scanf("%d", &opcao);
+
+        switch (opcao) {
+            case 1:
+                realizarEmprestimo(vetor_usuarios, total_usuarios,
+                                   lista_livros,   tam_livros,
+                                   vetor_emprestimos, total_emprestimos);
+                break;
+
+            case 2:
+                listarEmprestimosEmAtraso(vetor_emprestimos, *total_emprestimos,
+                                          vetor_usuarios,    total_usuarios,
+                                          lista_livros,      tam_livros);
+                break;
+
+            case 0:
+                //Volta ao menu principal automaticamente
+                break;
+
+            default:
+                limpaTela();
+                desenhaBorda();
+                printf("\n  ❌ Opcao invalida! Digite um numero entre 0 e 2.\n");
+                desenhaBorda();
+                printf("\nPressione Enter para tentar novamente...");
+                while (getchar() != '\n');
+                getchar();
+                break;
+        }
+
+    } while (opcao != 0); //Repete ate o usuario escolher sair
+
+} //fecha menuEmprestimos
+
 int main(){
 setlocale(LC_ALL, "Portuguese");
 
@@ -1351,10 +1632,12 @@ switch(opcao){
 		while (opcao2 != 7);// enquanto o usuario nao optar por sair do menu secundario ele vai se repetir
     break;
     case 3:
-    printf("opção 3 foi escolhida\n");
+    		menuEmprestimos(vetor_usuarios, total_usuarios,
+							vetor_emprestimos, total_emprestimos;
     break;
     case 4:
-    printf("opção 4 foi escolhida\n");
+   			realizarDevolucao(vetor_usuarios, total_usuarios,
+							  vetor_emprestimos, total_emprestimos);
     break;
     case 5:
     printf("opção 5 foi escolhida\n");
