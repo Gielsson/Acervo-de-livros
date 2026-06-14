@@ -187,7 +187,7 @@ encontrou =1;
 void buscarLivro() {
     FILE *arquivo = fopen("livros.txt", "r");
     if (arquivo == NULL) {
-        printf("\n❌ Nenhum livro cadastrado no sistema ainda.\n");
+        printf("\n Nenhum livro cadastrado no sistema ainda.\n");
         return;
     }
 
@@ -220,7 +220,7 @@ void buscarLivro() {
             termo_busca[i] = tolower(termo_busca[i]);
         }
     } else {
-        printf("\n❌ Opcao invalida!\n");
+        printf("\n Opcao invalida!\n");
         fclose(arquivo);
         return;
     }
@@ -278,7 +278,7 @@ void buscarLivro() {
     }
 
     if (!encontrou) {
-        printf("\n❌ Nenhum livro correspondente foi encontrado.\n");
+        printf("\n Nenhum livro correspondente foi encontrado.\n");
     }
 
     fclose(arquivo);
@@ -1301,7 +1301,7 @@ switch(opcao){
            printf("\n [4] - Informar os livros emprestados para um usuario");
 		   printf("\n [5] - Atualizar dados");
 		   printf("\n [6] - Remover usuarios \n");
-		   printf(" [7] - Sair \n");
+		   printf(" [7] - Voltar ao Menu Principal\n");
 		   printf("Escolha uma opcao: ");
 		   scanf("%d", &opcao2);
            getchar();
