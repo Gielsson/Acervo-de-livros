@@ -673,7 +673,7 @@ void buscarUsuario(usuario lista_usuarios[], int tam_usuarios) {
     desenhaBorda();
 
     if (tam_usuarios == 0) {
-        printf("\n❌ Nenhum usuario cadastrado no sistema ate o momento.\n");
+        printf("\n Nenhum usuario cadastrado no sistema ate o momento.\n");
         return;
     }
 
@@ -701,7 +701,7 @@ void buscarUsuario(usuario lista_usuarios[], int tam_usuarios) {
             termo_busca[i] = tolower(termo_busca[i]);
         }
     } else {
-        printf("\n❌ Opcao invalida!\n");
+        printf("\n Opcao invalida!\n");
         return;
     }
 
