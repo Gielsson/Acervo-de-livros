@@ -903,7 +903,59 @@ void atualizarUsuario(usuario lista_usuarios[], int tam_usuarios) {
 
     printf("\n Dados atualizados com sucesso!\n");
 }
+void removerUsuario(usuario lista_usuarios[], int *tam_usuarios) {
+    limpaTela();
+    desenhaBorda();
+    printf("\n REMOVER USUARIO DO SISTEMA \n");
+    desenhaBorda();
 
+    if (*tam_usuarios == 0) {
+        printf("\n Nenhum usuario cadastrado no sistema ate o momento.\n");
+        return;
+    }
+    int mat_busca;
+    printf("Digite a matricula do usuario que deseja remover: ");
+    scanf("%d", &mat_busca);
+    getchar(); // limpa o buffer
+    int indice = -1;
+    //procura o usuário no vetor na memória
+    for (int i = 0; i < *tam_usuarios; i++) {
+        if (lista_usuarios[i].matricula == mat_busca) {
+            indice = i;
+            break;
+        }
+    }
+    // se não encontrou, avisa e sai
+    if (indice == -1) {
+        printf("\n Usuario com a matricula %d nao foi encontrado.\n", mat_busca);
+        return;
+    }
+    // não remove se tiver empréstimos ativos
+    if (lista_usuarios[indice].qtd_emprestimos_ativos > 0) {
+        printf("\n Nao e possivel remover o usuario '%s'!\n", lista_usuarios[indice].nome);
+        printf("Motivo: Ele possui %d emprestimo(s) ativo(s) pendente(s).\n", lista_usuarios[indice].qtd_emprestimos_ativos);
+        return;
+    }
+    // confirma se deseja remover o usuario
+    char confirmar;
+    printf("\nTem certeza que deseja remover o usuario '%s'? (S/N): ", lista_usuarios[indice].nome);
+    scanf(" %c", &confirmar);
+    getchar();
+    confirmar = tolower(confirmar);
+    if (confirmar != 's') {
+        printf("\nOperacao cancelada.\n");
+        return;
+    }
+    //  "puxa" todos os elementos seguintes uma posição para trás
+    for (int i = indice; i < (*tam_usuarios) - 1; i++) {
+        lista_usuarios[i] = lista_usuarios[i + 1];
+    }
+    // reduz a quantidade total de usuários na memória RAM
+    (*tam_usuarios)--;
+    //atualiza o arquivo txt reescrevendo o vetor atualizado sem o usuário removido
+    SalvarUsuarios(lista_usuarios, *tam_usuarios);
+    printf("\n Usuario removido com sucesso tanto da memoria quanto do arquivo!\n");
+}
 
 void realizarEmprestimo(usuario vetor_usuarios[], int total_usuarios, emprestimo vetor_emprestimos[], int *total_emprestimos);
 
@@ -1627,7 +1679,10 @@ switch(opcao){
                 getchar();
 		break;
 		case 6:
-		printf("opção 6 escolhida");
+limpaTela();
+                removerUsuario(vetor_usuarios, &total_usuarios); //passa o & porque o total vai diminuir!
+                printf("\nDigite enter pra voltar.");
+                getchar();
 		break;
 		   }
 		}
