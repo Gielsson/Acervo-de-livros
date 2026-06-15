@@ -907,7 +907,7 @@ void atualizarUsuario(usuario lista_usuarios[], int tam_usuarios) {
 
 void realizarEmprestimo(usuario vetor_usuarios[], int total_usuarios, emprestimo vetor_emprestimos[], int *total_emprestimos);
 
-void realizarDevolucao(usuario vetor_usuarios[], int total_usuarios,  emprestimo vetor_emprestimos[], int total_emprestimos);
+void realizarDevolucao(usuario vetor_usuarios[], int total_usuarios,  emprestimo vetor_emprestimos[], int *total_emprestimos);
 
 void listarEmprestimosEmAtraso(emprestimo vetor_emprestimos[], int total_emprestimos, usuario vetor_usuarios[], int total_usuarios);
 
@@ -1130,7 +1130,7 @@ void realizarEmprestimo(usuario vetor_usuarios[], int total_usuarios,emprestimo 
 
 
 //Funcao realizarDevolucao
-void realizarDevolucao(usuario vetor_usuarios[], int total_usuarios, emprestimo vetor_emprestimos[], int total_emprestimos) {
+void realizarDevolucao(usuario vetor_usuarios[], int total_usuarios, emprestimo vetor_emprestimos[], int *total_emprestimos) {
 
     int id_busca;
     int emprestimo_encontrado = 0; //Flag: 0 = nao encontrou, 1 = encontrou 
@@ -1445,15 +1445,17 @@ void menuEmprestimos(usuario vetor_usuarios[], int total_usuarios, emprestimo ve
 
         switch (opcao) {
             case 1:
-                realizarEmprestimo(vetor_usuarios, total_usuarios,
-                                   lista_livros,   tam_livros,
-                                   vetor_emprestimos, total_emprestimos);
+                realizarEmprestimo(vetor_usuarios, 
+									total_usuarios,
+                                   	vetor_emprestimos, 
+									total_emprestimos);
                 break;
 
             case 2:
-                listarEmprestimosEmAtraso(vetor_emprestimos, *total_emprestimos,
-                                          vetor_usuarios,    total_usuarios,
-                                          lista_livros,      tam_livros);
+                listarEmprestimosEmAtraso(vetor_emprestimos, 
+											*total_emprestimos,
+                                          	vetor_usuarios,   
+											total_usuarios);
                 break;
 
             case 0:
@@ -1632,12 +1634,16 @@ switch(opcao){
 		while (opcao2 != 7);// enquanto o usuario nao optar por sair do menu secundario ele vai se repetir
     break;
     case 3:
-    		menuEmprestimos(vetor_usuarios, total_usuarios,
-							vetor_emprestimos, total_emprestimos;
+    		menuEmprestimos(vetor_usuarios, 
+							total_usuarios,
+							vetor_emprestimos, 
+							&total_emprestimos);
     break;
     case 4:
-   			realizarDevolucao(vetor_usuarios, total_usuarios,
-							  vetor_emprestimos, total_emprestimos);
+   			realizarDevolucao(vetor_usuarios, 
+							  total_usuarios,
+							  vetor_emprestimos,
+							   &total_emprestimos);
     break;
     case 5:
     printf("opção 5 foi escolhida\n");
