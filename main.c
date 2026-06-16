@@ -991,19 +991,30 @@ void atualizarEstoqueLivro(int codigo, int delta) {
     }
 
     livro l;
-    while (fscanf(arq, "%d\n%[^\n]\n%[^\n]\n%d\n%[^\n]\n%d\n%d\n%d\n",
-                  &l.codigo, l.titulo, l.autor, &l.ano_de_publi,
-                  l.genero, &l.qtd_total, &l.quant_disp,
-                  &l.total_emprestimos) == 8) {
+	 while (fscanf(arq, "%d\n", &l.codigo) != EOF) {
+            fscanf(arq, "%[^\n]\n", l.titulo);
+		    fscanf(arq, "%d\n", &l.codigo);
+			fscanf(arq, "%[^\n]\n", l.autor);
+			fscanf(arq, "%d\n", &l.ano_de_publi);
+ 			fscanf(arq, "%[^\n]\n", l.genero);
+ 			fscanf(arq, "%d\n", &l.qtd_total);
+ 			fscanf(arq, "%d\n",	&l.quant_disp);
+			fscanf(arq, "%d\n", &l.total_emprestimos);
 
         if (l.codigo == codigo) {
             l.quant_disp += delta;
             if (delta < 0) l.total_emprestimos++; 
         }
 
-        fprintf(temp, "%d\n%s\n%s\n%d\n%s\n%d\n%d\n%d\n",
-                l.codigo, l.titulo, l.autor, l.ano_de_publi,
-                l.genero, l.qtd_total, l.quant_disp, l.total_emprestimos);
+        (fprintf(temp, "%d\n", &l.codigo) != EOF) {
+            fprintf(temp, "%[^\n]\n", l.titulo);
+		    fprintf(temp, "%d\n", &l.codigo);
+			fprintf(temp, "%[^\n]\n", l.autor);
+			fprintf(temp, "%d\n", &l.ano_de_publi);
+ 			fprintf(temp, "%[^\n]\n", l.genero);
+ 			fprintf(temp, "%d\n", &l.qtd_total);
+ 			fprintf(temp, "%d\n",	&l.quant_disp);
+			fprintf(temp, "%d\n", &l.total_emprestimos);
     }
 
     fclose(arq);
