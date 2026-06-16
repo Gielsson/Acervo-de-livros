@@ -75,9 +75,15 @@ if(arquivo == NULL){
 livro aux; // variavel para armazenar os valores na struct livro
 int ultimo_id=0;
 // Lê livro por livro até o fim do arquivo, guardando sempre o último código visto
-while (fscanf(arquivo, "%d\n", &aux.codigo) !=EOF){
- aux = lerLivro(arquivo); // lê os campos restantes
-
+while (fscanf(arquivo, "%d\n", &aux.codigo) != EOF){
+        fscanf(arquivo, "%[^\n]\n", aux.titulo);
+        fscanf(arquivo, "%[^\n]\n", aux.autor);
+        fscanf(arquivo, "%d\n", &aux.ano_de_publi);
+        fscanf(arquivo, "%[^\n]\n", aux.genero);
+        fscanf(arquivo, "%d\n", &aux.qtd_total);
+        fscanf(arquivo, "%d\n", &aux.quant_disp);
+        fscanf(arquivo, "%d\n", &aux.total_emprestimos);
+     
         ultimo_id = aux.codigo;  // vai guardando o último
     }
     fclose(arquivo);
@@ -187,7 +193,7 @@ encontrou =1;
 void buscarLivro() {
     FILE *arquivo = fopen("livros.txt", "r");
     if (arquivo == NULL) {
-        printf("\n Nenhum livro cadastrado no sistema ainda.\n");
+        printf("\n❌ Nenhum livro cadastrado no sistema ainda.\n");
         return;
     }
 
@@ -220,7 +226,7 @@ void buscarLivro() {
             termo_busca[i] = tolower(termo_busca[i]);
         }
     } else {
-        printf("\n Opcao invalida!\n");
+        printf("\n❌ Opcao invalida!\n");
         fclose(arquivo);
         return;
     }
@@ -278,7 +284,7 @@ void buscarLivro() {
     }
 
     if (!encontrou) {
-        printf("\n Nenhum livro correspondente foi encontrado.\n");
+        printf("\n❌ Nenhum livro correspondente foi encontrado.\n");
     }
 
     fclose(arquivo);
