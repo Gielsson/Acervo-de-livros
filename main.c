@@ -1537,8 +1537,61 @@ limpaTela();
 							   &total_emprestimos);
     break;
     case 5:
-    printf("opção 5 foi escolhida\n");
-    break;
+    do{
+    limpaTela();
+    desenhaBorda();
+    printf("\n      RELATORIOS      \n");
+    desenhaBorda();
+
+    printf("\n [1] - Livros mais emprestados");
+    printf("\n [2] - Emprestimos em atraso");
+    printf("\n [3] - Livros atualmente emprestados");
+    printf("\n [4] - Usuarios com emprestimos ativos");
+    printf("\n [5] - Voltar ao menu principal");
+
+    printf("\nEscolha uma opcao: ");
+    scanf("%d", &opcaoSecundar);
+    getchar();
+
+    switch(opcaoSecundar){
+
+        case 1:
+            printf("\nRelatorio de livros mais emprestados.\n");
+            printf("Pressione Enter para voltar.");
+            getchar();
+            break;
+
+        case 2:
+            printf("\nRelatorio de emprestimos em atraso.\n");
+            printf("Pressione Enter para voltar.");
+            getchar();
+            break;
+
+        case 3:
+            printf("\nRelatorio de livros atualmente emprestados.\n");
+            printf("Pressione Enter para voltar.");
+            getchar();
+            break;
+
+        case 4:
+            printf("\nRelatorio de usuarios com emprestimos ativos.\n");
+            printf("Pressione Enter para voltar.");
+            getchar();
+            break;
+
+        case 5:
+            break;
+
+        default:
+            printf("\nOpcao invalida!\n");
+            printf("Pressione Enter para continuar.");
+            getchar();
+            break;
+    }
+
+}while(opcaoSecundar != 5);
+
+break;
     case 6:
     limpaTela();
     break;
