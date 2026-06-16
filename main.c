@@ -1379,7 +1379,430 @@ void menuEmprestimos(usuario vetor_usuarios[], int total_usuarios, emprestimo ve
         }
     } while (opcao != 0);
 } //fecha menuEmprestimos
+int buscarTituloLivro(int codigo, char *titulo_saida) {
+    FILE *arq = fopen("livros.txt", "r");
+    if (arq == NULL) {
+        strcpy(titulo_saida, "Livro nao encontrado");
+        return 0;
+    }
+ 
+    livro aux;
+    int encontrou = 0;
+ 
+    while (fscanf(arq, "%d\n", &aux.codigo) != EOF) {
+        fscanf(arq, "%[^\n]\n", aux.titulo);
+        fscanf(arq, "%[^\n]\n", aux.autor);
+        fscanf(arq, "%d\n",    &aux.ano_de_publi);
+        fscanf(arq, "%[^\n]\n", aux.genero);
+        fscanf(arq, "%d\n",    &aux.qtd_total);
+        fscanf(arq, "%d\n",    &aux.quant_disp);
+        fscanf(arq, "%d\n",    &aux.total_emprestimos);
+ 
+        if (aux.codigo == codigo) { // Busca o titulo de um livro pelo codigo em livros.txt.
+            strcpy(titulo_saida, aux.titulo);
+            encontrou = 1; //Retorna 1 se encontrou, 0 se nao. Sempre preenche titulo_saida
+            break;
+        }
+    }
+ 
+    fclose(arq);
+    if (!encontrou) strcpy(titulo_saida, "Livro nao encontrado");
+    return encontrou;
+}
+void converterDataParaOrdenavel(const char *data_ddmmaaaa, char *saida_aaaammdd) {
+    // indices do formato DD/MM/AAAA
+    //   D=0,1  /=2  M=3,4  /=5  A=6,7,8,9
+    saida_aaaammdd[0] = data_ddmmaaaa[6];  // A
+    saida_aaaammdd[1] = data_ddmmaaaa[7];  // A
+    saida_aaaammdd[2] = data_ddmmaaaa[8];  // A
+    saida_aaaammdd[3] = data_ddmmaaaa[9];  // A
+    saida_aaaammdd[4] = data_ddmmaaaa[3];  // M
+    saida_aaaammdd[5] = data_ddmmaaaa[4];  // M
+    saida_aaaammdd[6] = data_ddmmaaaa[0];  // D
+    saida_aaaammdd[7] = data_ddmmaaaa[1];  // D
+    saida_aaaammdd[8] = '\0';
+}
+void obterDataHoje(char *buffer) {
+    time_t t = time(NULL);
+    struct tm *info = localtime(&t);
+    strftime(buffer, 11, "%d/%m/%Y", info);
+}
+int estaEmAtraso(const emprestimo *emp, const char *hoje_ord) {
+    if (emp->devolvido == 1) return 0; // ja devolvido, sem atraso
+ 
+    char prazo_ord[9];
+    converterDataParaOrdenavel(emp->data_prevista, prazo_ord);
+ 
+    // strcmp < 0: prazo_ord veio "antes" de hoje_ord, ou seja, ja venceu
+    return strcmp(prazo_ord, hoje_ord) < 0;
+}
+    // Le livros.txt e preenche o vetor. Retorna a quantidade de livros lidos.
+// Usado pelo relatorio de mais emprestados, que precisa ordenar em memoria.
+int carregarTodosLivros(livro lista[], int capacidade) {
+    FILE *arq = fopen("livros.txt", "r");
+    if (arq == NULL) return 0;
+ 
+    int tam = 0;
+    while (tam < capacidade && fscanf(arq, "%d\n", &lista[tam].codigo) != EOF) {
+        fscanf(arq, "%[^\n]\n", lista[tam].titulo);
+        fscanf(arq, "%[^\n]\n", lista[tam].autor);
+        fscanf(arq, "%d\n",    &lista[tam].ano_de_publi);
+        fscanf(arq, "%[^\n]\n", lista[tam].genero);
+        fscanf(arq, "%d\n",    &lista[tam].qtd_total);
+        fscanf(arq, "%d\n",    &lista[tam].quant_disp);
+        fscanf(arq, "%d\n",    &lista[tam].total_emprestimos);
+        tam++;
+    }
+ 
+    fclose(arq);
+    return tam;
+}
+void relatorioLivrosMaisEmprestados() {
+    limpaTela();
+    desenhaBorda();
+    printf("\n");
+    printf("  LIVROS MAIS EMPRESTADOS\n");
+    desenhaBorda();
 
+    livro lista[1000];
+    int tam = carregarTodosLivros(lista, 1000);
+
+    if (tam == 0) {
+        printf("\n");
+        printf("Nenhum livro cadastrado no sistema.\n");
+        return;
+    }
+
+    // Bubble sort decrescente por total_emprestimos
+    for (int i = 0; i < tam - 1; i++) {
+        for (int j = 0; j < tam - 1 - i; j++) {
+            if (lista[j].total_emprestimos < lista[j+1].total_emprestimos) {
+                livro temp = lista[j];
+                lista[j]   = lista[j+1];
+                lista[j+1] = temp;
+            }
+        }
+    }
+
+    // Exibe na tela
+    printf("\n");
+    for (int i = 0; i < tam; i++) {
+        printf("Posicao: %d\n",          i + 1);
+        printf("Titulo: %s\n",           lista[i].titulo);
+        printf("Autor: %s\n",            lista[i].autor);
+        printf("Total emprestimos: %d\n", lista[i].total_emprestimos);
+        desenhaBorda();
+    }
+
+    // Salva em arquivo .txt
+    FILE *arq_rel = fopen("relatorio_mais_emprestados.txt", "w");
+    if (arq_rel == NULL) {
+        printf("\n");
+        printf("Erro ao criar o arquivo de relatorio!\n");
+        return;
+    }
+
+    fprintf(arq_rel, "RELATORIO - LIVROS MAIS EMPRESTADOS\n");
+    fprintf(arq_rel, "====================================\n");
+    fprintf(arq_rel, "\n");
+    for (int i = 0; i < tam; i++) {
+        fprintf(arq_rel, "Posicao: %d\n",           i + 1);
+        fprintf(arq_rel, "Titulo: %s\n",            lista[i].titulo);
+        fprintf(arq_rel, "Autor: %s\n",             lista[i].autor);
+        fprintf(arq_rel, "Total emprestimos: %d\n", lista[i].total_emprestimos);
+        fprintf(arq_rel, "------------------------------------\n");
+    }
+
+    fclose(arq_rel);
+    printf("\n");
+    printf("Relatorio salvo em 'relatorio_mais_emprestados.txt'\n");
+}
+void relatorioUsuariosEmAtraso(usuario lista_usuarios[], int tam_usuarios) {
+    limpaTela();
+    desenhaBorda();
+    printf("\n");
+    printf("  USUARIOS COM EMPRESTIMOS EM ATRASO\n");
+    desenhaBorda();
+
+    // Pega a data de hoje já no formato ordenável (AAAAMMDD) para comparar
+    char hoje[11];
+    obterDataHoje(hoje);
+    char hoje_ord[9];
+    converterDataParaOrdenavel(hoje, hoje_ord);
+
+    printf("\n");
+    printf("Data de hoje: %s\n", hoje);
+    printf("\n");
+
+    FILE *arq_emp = fopen("emprestimos.txt", "r");
+    if (arq_emp == NULL) {
+        printf("Nenhum emprestimo registrado no sistema.\n");
+        return;
+    }
+
+    FILE *arq_rel = fopen("relatorio_atrasos.txt", "w");
+    if (arq_rel == NULL) {
+        printf("Erro ao criar o arquivo de relatorio!\n");
+        fclose(arq_emp);
+        return;
+    }
+
+    fprintf(arq_rel, "RELATORIO - USUARIOS COM EMPRESTIMOS EM ATRASO\n");
+    fprintf(arq_rel, "===============================================\n");
+    fprintf(arq_rel, "Data de hoje: %s\n", hoje);
+    fprintf(arq_rel, "\n");
+
+    emprestimo emp;
+    int achou = 0;
+
+    while (fscanf(arq_emp, "%d\n", &emp.id) != EOF) {
+        fscanf(arq_emp, "%d\n", &emp.matricula_usuario);
+        fscanf(arq_emp, "%d\n", &emp.codigo_livro);
+        fscanf(arq_emp, "%[^\n]\n", emp.data_retirada);
+        fscanf(arq_emp, "%[^\n]\n", emp.data_prevista);
+        fscanf(arq_emp, "%[^\n]\n", emp.data_devolucao);
+        fscanf(arq_emp, "%d\n", &emp.devolvido);
+
+        // Verifica se está em atraso usando a função já existente no código
+        if (estaEmAtraso(&emp, hoje_ord)) {
+            achou = 1;
+
+            // Busca o nome do usuário no vetor em memória
+            char nome[250] = "Nao encontrado";
+            for (int i = 0; i < tam_usuarios; i++) {
+                if (lista_usuarios[i].matricula == emp.matricula_usuario) {
+                    strcpy(nome, lista_usuarios[i].nome);
+                    break;
+                }
+            }
+
+            // Busca o título do livro no arquivo
+            char titulo[250];
+            buscarTituloLivro(emp.codigo_livro, titulo);
+
+            // Exibe na tela
+            printf("ID Emprestimo: %d\n",  emp.id);
+            printf("Usuario: %s\n",        nome);
+            printf("Matricula: %d\n",      emp.matricula_usuario);
+            printf("Livro: %s\n",          titulo);
+            printf("Prazo vencido em: %s\n", emp.data_prevista);
+            desenhaBorda();
+
+            // Salva no arquivo
+            fprintf(arq_rel, "ID Emprestimo: %d\n",    emp.id);
+            fprintf(arq_rel, "Usuario: %s\n",           nome);
+            fprintf(arq_rel, "Matricula: %d\n",         emp.matricula_usuario);
+            fprintf(arq_rel, "Livro: %s\n",             titulo);
+            fprintf(arq_rel, "Prazo vencido em: %s\n",  emp.data_prevista);
+            fprintf(arq_rel, "------------------------------------\n");
+        }
+    }
+
+    fclose(arq_emp);
+    fclose(arq_rel);
+
+    if (!achou) {
+        printf("Nenhum emprestimo em atraso encontrado.\n");
+    } else {
+        printf("\n");
+        printf("Relatorio salvo em 'relatorio_atrasos.txt'\n");
+    }
+}
+void relatorioAcervoDisponivel() {
+    limpaTela();
+    desenhaBorda();
+    printf("\n");
+    printf("  ACERVO DISPONIVEL\n");
+    desenhaBorda();
+
+    FILE *arq = fopen("livros.txt", "r");
+    if (arq == NULL) {
+        printf("\n");
+        printf("Nenhum livro cadastrado no sistema.\n");
+        return;
+    }
+
+    FILE *arq_rel = fopen("relatorio_acervo_disponivel.txt", "w");
+    if (arq_rel == NULL) {
+        printf("Erro ao criar o arquivo de relatorio!\n");
+        fclose(arq);
+        return;
+    }
+
+    fprintf(arq_rel, "RELATORIO - ACERVO DISPONIVEL\n");
+    fprintf(arq_rel, "==============================\n");
+    fprintf(arq_rel, "\n");
+
+    livro aux;
+    int achou = 0;
+
+    while (fscanf(arq, "%d\n", &aux.codigo) != EOF) {
+        fscanf(arq, "%[^\n]\n", aux.titulo);
+        fscanf(arq, "%[^\n]\n", aux.autor);
+        fscanf(arq, "%d\n",     &aux.ano_de_publi);
+        fscanf(arq, "%[^\n]\n", aux.genero);
+        fscanf(arq, "%d\n",     &aux.qtd_total);
+        fscanf(arq, "%d\n",     &aux.quant_disp);
+        fscanf(arq, "%d\n",     &aux.total_emprestimos);
+
+        // Só exibe livros que tenham ao menos 1 exemplar disponível
+        if (aux.quant_disp > 0) {
+            achou = 1;
+
+            // Exibe na tela
+            printf("\n");
+            printf("Codigo: %d\n",       aux.codigo);
+            printf("Titulo: %s\n",       aux.titulo);
+            printf("Autor: %s\n",        aux.autor);
+            printf("Genero: %s\n",       aux.genero);
+            printf("Ano: %d\n",          aux.ano_de_publi);
+            printf("Disponiveis: %d\n",  aux.quant_disp);
+            printf("Total: %d\n",        aux.qtd_total);
+            desenhaBorda();
+
+            // Salva no arquivo
+            fprintf(arq_rel, "Codigo: %d\n",      aux.codigo);
+            fprintf(arq_rel, "Titulo: %s\n",      aux.titulo);
+            fprintf(arq_rel, "Autor: %s\n",       aux.autor);
+            fprintf(arq_rel, "Genero: %s\n",      aux.genero);
+            fprintf(arq_rel, "Ano: %d\n",         aux.ano_de_publi);
+            fprintf(arq_rel, "Disponiveis: %d\n", aux.quant_disp);
+            fprintf(arq_rel, "Total: %d\n",       aux.qtd_total);
+            fprintf(arq_rel, "------------------------------------\n");
+        }
+    }
+
+    fclose(arq);
+    fclose(arq_rel);
+
+    if (!achou) {
+        printf("\n");
+        printf("Nenhum livro disponivel no momento.\n");
+    } else {
+        printf("\n");
+        printf("Relatorio salvo em 'relatorio_acervo_disponivel.txt'\n");
+    }
+}
+void relatorioHistoricoUsuario(usuario lista_usuarios[], int tam_usuarios) {
+    limpaTela();
+    desenhaBorda();
+    printf("\n");
+    printf("  HISTORICO COMPLETO DE EMPRESTIMOS DO USUARIO\n");
+    desenhaBorda();
+
+    int mat_busca;
+    printf("\n");
+    printf("Digite a matricula do usuario: ");
+    scanf("%d", &mat_busca);
+    getchar();
+
+    // Verifica se o usuário existe no vetor em memória
+    char nome_usuario[250] = "";
+    int encontrou_usuario = 0;
+    for (int i = 0; i < tam_usuarios; i++) {
+        if (lista_usuarios[i].matricula == mat_busca) {
+            strcpy(nome_usuario, lista_usuarios[i].nome);
+            encontrou_usuario = 1;
+            break;
+        }
+    }
+
+    if (!encontrou_usuario) {
+        printf("\n");
+        printf("Matricula %d nao encontrada no sistema.\n", mat_busca);
+        return;
+    }
+
+    FILE *arq_emp = fopen("emprestimos.txt", "r");
+    if (arq_emp == NULL) {
+        printf("\n");
+        printf("Nenhum emprestimo registrado no sistema.\n");
+        return;
+    }
+
+    FILE *arq_rel = fopen("relatorio_historico_usuario.txt", "w");
+    if (arq_rel == NULL) {
+        printf("Erro ao criar o arquivo de relatorio!\n");
+        fclose(arq_emp);
+        return;
+    }
+
+    fprintf(arq_rel, "RELATORIO - HISTORICO COMPLETO DE EMPRESTIMOS\n");
+    fprintf(arq_rel, "==============================================\n");
+    fprintf(arq_rel, "Usuario: %s\n", nome_usuario);
+    fprintf(arq_rel, "Matricula: %d\n", mat_busca);
+    fprintf(arq_rel, "\n");
+
+    emprestimo emp;
+    int achou = 0;
+
+    while (fscanf(arq_emp, "%d\n", &emp.id) != EOF) {
+        fscanf(arq_emp, "%d\n", &emp.matricula_usuario);
+        fscanf(arq_emp, "%d\n", &emp.codigo_livro);
+        fscanf(arq_emp, "%[^\n]\n", emp.data_retirada);
+        fscanf(arq_emp, "%[^\n]\n", emp.data_prevista);
+        fscanf(arq_emp, "%[^\n]\n", emp.data_devolucao);
+        fscanf(arq_emp, "%d\n", &emp.devolvido);
+
+        if (emp.matricula_usuario == mat_busca) {
+            if (!achou) {
+                printf("\n");
+                printf("Usuario: %s\n", nome_usuario);
+                printf("Matricula: %d\n", mat_busca);
+                desenhaBorda();
+            }
+            achou = 1;
+
+            // Busca o título do livro pelo código
+            char titulo[250];
+            buscarTituloLivro(emp.codigo_livro, titulo);
+
+            // Exibe na tela
+            printf("\n");
+            printf("ID Emprestimo: %d\n",   emp.id);
+            printf("Livro: %s\n",           titulo);
+            printf("Codigo do livro: %d\n", emp.codigo_livro);
+            printf("Data de retirada: %s\n", emp.data_retirada);
+            printf("Prazo de devolucao: %s\n", emp.data_prevista);
+
+            // Mostra status e data de devolução real conforme situação
+            if (emp.devolvido == 1) {
+                printf("Data de devolucao: %s\n", emp.data_devolucao);
+                printf("Status: DEVOLVIDO\n");
+            } else {
+                printf("Data de devolucao: Pendente\n");
+                printf("Status: EM ABERTO\n");
+            }
+            desenhaBorda();
+
+            // Salva no arquivo
+            fprintf(arq_rel, "ID Emprestimo: %d\n",      emp.id);
+            fprintf(arq_rel, "Livro: %s\n",               titulo);
+            fprintf(arq_rel, "Codigo do livro: %d\n",     emp.codigo_livro);
+            fprintf(arq_rel, "Data de retirada: %s\n",    emp.data_retirada);
+            fprintf(arq_rel, "Prazo de devolucao: %s\n",  emp.data_prevista);
+            if (emp.devolvido == 1) {
+                fprintf(arq_rel, "Data de devolucao: %s\n", emp.data_devolucao);
+                fprintf(arq_rel, "Status: DEVOLVIDO\n");
+            } else {
+                fprintf(arq_rel, "Data de devolucao: Pendente\n");
+                fprintf(arq_rel, "Status: EM ABERTO\n");
+            }
+            fprintf(arq_rel, "------------------------------------\n");
+        }
+    }
+
+    fclose(arq_emp);
+    fclose(arq_rel);
+
+    if (!achou) {
+        printf("\n");
+        printf("Nenhum emprestimo encontrado para este usuario.\n");
+    } else {
+        printf("\n");
+        printf("Relatorio salvo em 'relatorio_historico_usuario.txt'\n");
+    }
+}
 int main(){
 setlocale(LC_ALL, "Portuguese");
 
@@ -1551,62 +1974,53 @@ limpaTela();
 							  vetor_emprestimos,
 							   &total_emprestimos);
     break;
-    case 5:
-    do{
-    limpaTela();
-    desenhaBorda();
-    printf("\n      RELATORIOS      \n");
-    desenhaBorda();
+    case 5: {
+    int opcaoRel;
+    do {
+        limpaTela();
+        desenhaBorda();
+        printf("\n  RELATORIOS \n");
+        desenhaBorda();
+        printf("\n [1] - Livros mais emprestados");
+        printf("\n [2] - Usuarios com emprestimos em atraso");
+        printf("\n [3] - Acervo disponivel");
+        printf("\n [4] - Historico de emprestimos de um usuario");
+        printf("\n [5] - Voltar ao Menu Principal\n");
+        printf("Escolha uma opcao: ");
+        scanf("%d", &opcaoRel);
+        getchar();
 
-    printf("\n [1] - Livros mais emprestados");
-    printf("\n [2] - Emprestimos em atraso");
-    printf("\n [3] - Livros atualmente emprestados");
-    printf("\n [4] - Usuarios com emprestimos ativos");
-    printf("\n [5] - Voltar ao menu principal");
-
-    printf("\nEscolha uma opcao: ");
-    scanf("%d", &opcaoSecundar);
-    getchar();
-
-    switch(opcaoSecundar){
-
-        case 1:
-            printf("\nRelatorio de livros mais emprestados.\n");
-            printf("Pressione Enter para voltar.");
-            getchar();
-            break;
-
-        case 2:
-            printf("\nRelatorio de emprestimos em atraso.\n");
-            printf("Pressione Enter para voltar.");
-            getchar();
-            break;
-
-        case 3:
-            printf("\nRelatorio de livros atualmente emprestados.\n");
-            printf("Pressione Enter para voltar.");
-            getchar();
-            break;
-
-        case 4:
-            printf("\nRelatorio de usuarios com emprestimos ativos.\n");
-            printf("Pressione Enter para voltar.");
-            getchar();
-            break;
-
-        case 5:
-            break;
-
-        default:
-            printf("\nOpcao invalida!\n");
-            printf("Pressione Enter para continuar.");
-            getchar();
-            break;
-    }
-
-}while(opcaoSecundar != 5);
-
-break;
+        switch (opcaoRel) {
+            case 1:
+                relatorioLivrosMaisEmprestados();
+                printf("\nPressione Enter para voltar.");
+                getchar();
+                break;
+            case 2:
+                relatorioUsuariosEmAtraso(vetor_usuarios, total_usuarios);
+                printf("\nPressione Enter para voltar.");
+                getchar();
+                break;
+            case 3:
+                relatorioAcervoDisponivel();
+                printf("\nPressione Enter para voltar.");
+                getchar();
+                break;
+            case 4:
+                relatorioHistoricoUsuario(vetor_usuarios, total_usuarios);
+                printf("\nPressione Enter para voltar.");
+                getchar();
+                break;
+            case 5:
+                break;
+            default:
+                printf("\nOpcao invalida!\n");
+                getchar();
+                break;
+        }
+    } while (opcaoRel != 5);
+    break;
+}
     case 6:
     limpaTela();
     break;
