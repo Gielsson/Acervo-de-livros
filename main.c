@@ -1110,7 +1110,7 @@ void realizarEmprestimo(usuario vetor_usuarios[], int total_usuarios,
     // ETAPA 4 — Gravar empréstimo
     FILE *arq_emp = fopen("emprestimos.txt", "a");
     if (arq_emp == NULL) {
-        printf("\n❌ Erro ao abrir emprestimos.txt!\n");
+        printf("\n Erro ao abrir emprestimos.txt!\n");
         aguardarEnter();
         return;
     }
@@ -1201,7 +1201,7 @@ void realizarDevolucao(usuario vetor_usuarios[], int total_usuarios,
     rename("temp_emprestimos.txt", "emprestimos.txt");
 
     if (!encontrado) {
-        printf("\n❌ ID %d nao encontrado ou ja devolvido!\n", id_busca);
+        printf("\n ID %d nao encontrado ou ja devolvido!\n", id_busca);
         aguardarEnter();
         return;
     }
