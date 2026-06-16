@@ -962,7 +962,7 @@ void removerUsuario(usuario lista_usuarios[], int *tam_usuarios) {
     SalvarUsuarios(lista_usuarios, *tam_usuarios);
     printf("\n Usuario removido com sucesso tanto da memoria quanto do arquivo!\n");
 }
-// Protótipos 
+// os prototipos estao aqui pois as funções são chamadas antes de serem definidas no código. 
 void aguardarEnter();
 void atualizarEstoqueLivro(int codigo, int delta);
 void realizarEmprestimo(usuario vetor_usuarios[], int total_usuarios, emprestimo vetor_emprestimos[], int *total_emprestimos);
@@ -992,29 +992,21 @@ void atualizarEstoqueLivro(int codigo, int delta) {
 
     livro l;
 	 while (fscanf(arq, "%d\n", &l.codigo) != EOF) {
-            fscanf(arq, "%[^\n]\n", l.titulo);
-		    fscanf(arq, "%d\n", &l.codigo);
-			fscanf(arq, "%[^\n]\n", l.autor);
-			fscanf(arq, "%d\n", &l.ano_de_publi);
- 			fscanf(arq, "%[^\n]\n", l.genero);
- 			fscanf(arq, "%d\n", &l.qtd_total);
- 			fscanf(arq, "%d\n",	&l.quant_disp);
-			fscanf(arq, "%d\n", &l.total_emprestimos);
+    fscanf(arq, "%[^\n]\n", l.titulo);
+    fscanf(arq, "%[^\n]\n", l.autor);  
+    fscanf(arq, "%d\n", &l.ano_de_publi);
+    fscanf(arq, "%[^\n]\n", l.genero);
+    fscanf(arq, "%d\n", &l.qtd_total);
+    fscanf(arq, "%d\n", &l.quant_disp);
+    fscanf(arq, "%d\n", &l.total_emprestimos);
 
         if (l.codigo == codigo) {
-            l.quant_disp += delta;
+            l.quant_disp =  l.quant_disp + delta;
             if (delta < 0) l.total_emprestimos++; 
         }
+        
 
-        (fprintf(temp, "%d\n", &l.codigo) != EOF) {
-            fprintf(temp, "%[^\n]\n", l.titulo);
-		    fprintf(temp, "%d\n", &l.codigo);
-			fprintf(temp, "%[^\n]\n", l.autor);
-			fprintf(temp, "%d\n", &l.ano_de_publi);
- 			fprintf(temp, "%[^\n]\n", l.genero);
- 			fprintf(temp, "%d\n", &l.qtd_total);
- 			fprintf(temp, "%d\n",	&l.quant_disp);
-			fprintf(temp, "%d\n", &l.total_emprestimos);
+       gravarLivro(temp, l); // usando a função declarada em gerenciamento de livros,na qual eh escrita\fprintf nos dados do livro
     }
 
     fclose(arq);
@@ -1076,22 +1068,29 @@ void realizarEmprestimo(usuario vetor_usuarios[], int total_usuarios,
         return;
     }
 
-    while (fscanf(arq_livros, "%d\n%[^\n]\n%[^\n]\n%d\n%[^\n]\n%d\n%d\n%d\n",
-                  &l_temp.codigo, l_temp.titulo, l_temp.autor, &l_temp.ano_de_publi,
-                  l_temp.genero, &l_temp.qtd_total, &l_temp.quant_disp,
-                  &l_temp.total_emprestimos) == 8) {
-        if (l_temp.codigo == cod_busca) { achou = 1; break; }
+    while (fscanf(arq_livros, "%d\n", &l_temp.codigo) != EOF) {
+        fscanf(arq_livros, "%[^\n]\n", l_temp.titulo);
+        fscanf(arq_livros, "%[^\n]\n", l_temp.autor);
+        fscanf(arq_livros, "%d\n", &l_temp.ano_de_publi);
+        fscanf(arq_livros, "%[^\n]\n", l_temp.genero);
+        fscanf(arq_livros, "%d\n", &l_temp.qtd_total);
+        fscanf(arq_livros, "%d\n", &l_temp.quant_disp);
+        fscanf(arq_livros, "%d\n", &l_temp.total_emprestimos);
+        if (l_temp.codigo == cod_busca) { 
+            achou = 1; 
+            break;
+            }
     }
     fclose(arq_livros);
-
+ 
     if (!achou) {
-        printf("\n❌ Erro: Codigo %d nao encontrado!\n", cod_busca);
+        printf("\n Erro: Codigo %d nao encontrado!\n", cod_busca);
         aguardarEnter();
         return;
     }
-
+ 
     if (l_temp.quant_disp <= 0) {
-        printf("\n❌ Erro: '%s' esta esgotado!\n", l_temp.titulo);
+        printf("\n Erro: '%s' esta esgotado!\n", l_temp.titulo);
         aguardarEnter();
         return;
     }
@@ -1208,7 +1207,7 @@ void realizarDevolucao(usuario vetor_usuarios[], int total_usuarios,
     }
 
     // ETAPA 2 — Atualizar vetor de empréstimos em memória
-    for (int i = 0; i < total_emprestimos; i++) {
+    for (int i = 0; i < *total_emprestimos; i++) {
         if (vetor_emprestimos[i].id == id_busca) {
             vetor_emprestimos[i].devolvido = 1;
             strcpy(vetor_emprestimos[i].data_devolucao, emp_temp.data_devolucao);
@@ -1231,9 +1230,10 @@ void realizarDevolucao(usuario vetor_usuarios[], int total_usuarios,
     FILE *arq_usuarios = fopen("usuarios.txt", "w");
     if (arq_usuarios != NULL) {
         for (int i = 0; i < total_usuarios; i++) {
-            fprintf(arq_usuarios, "%d\n%s\n%s\n%d\n",
-                    vetor_usuarios[i].matricula, vetor_usuarios[i].nome,
-                    vetor_usuarios[i].curso, vetor_usuarios[i].qtd_emprestimos_ativos);
+             fprintf(arq_usuarios, "%d\n", vetor_usuarios[i].matricula);
+            fprintf(arq_usuarios, "%s\n", vetor_usuarios[i].nome);
+            fprintf(arq_usuarios, "%s\n", vetor_usuarios[i].curso);
+            fprintf(arq_usuarios, "%d\n", vetor_usuarios[i].qtd_emprestimos_ativos);
         }
         fclose(arq_usuarios);
     }
@@ -1302,10 +1302,14 @@ void listarEmprestimosEmAtraso(emprestimo vetor_emprestimos[], int total_emprest
         if (arq_livros != NULL) {
             rewind(arq_livros); // volta ao início para cada busca
             livro l;
-            while (fscanf(arq_livros, "%d\n%[^\n]\n%[^\n]\n%d\n%[^\n]\n%d\n%d\n%d\n",
-                          &l.codigo, l.titulo, l.autor, &l.ano_de_publi,
-                          l.genero, &l.qtd_total, &l.quant_disp,
-                          &l.total_emprestimos) == 8) {
+           while (fscanf(arq_livros, "%d\n", &l.codigo) != EOF) {
+                fscanf(arq_livros, "%[^\n]\n", l.titulo);
+                fscanf(arq_livros, "%[^\n]\n", l.autor);
+                fscanf(arq_livros, "%d\n", &l.ano_de_publi);
+                fscanf(arq_livros, "%[^\n]\n", l.genero);
+                fscanf(arq_livros, "%d\n", &l.qtd_total);
+                fscanf(arq_livros, "%d\n", &l.quant_disp);
+                fscanf(arq_livros, "%d\n", &l.total_emprestimos);
                 if (l.codigo == vetor_emprestimos[i].codigo_livro) {
                     strcpy(titulo_livro, l.titulo);
                     break;
