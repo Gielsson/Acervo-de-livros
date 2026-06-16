@@ -122,13 +122,13 @@ void cadastrarLivro(int id_automatico) { // id inicial calculado por obterProxim
      }
     } 
     if (genero_valido == 0) {
-                printf("\n⚠️ Erro: Genero invalido! Nao use numeros.\n");
+                printf("\n Erro: Genero invalido! Nao use numeros.\n");
             }
         } while (genero_valido == 0); // Só repete se for inválido
         //validando a quantidade total
     printf("Digite a quantidade total de exemplares: \n");
    while (scanf("%d", &novo.qtd_total) !=1 ||novo.qtd_total <0){
-printf("\n⚠️ Erro: Quantidade invalida! Digite um numero maior ou igual a 0.\n");
+printf("\n Erro: Quantidade invalida! Digite um numero maior ou igual a 0.\n");
 while (getchar() != '\n'); // Limpa o buffer
 printf("Digite a quantidade total de exemplares novamente: \n");
    }
@@ -226,7 +226,7 @@ void buscarLivro() {
             termo_busca[i] = tolower(termo_busca[i]);
         }
     } else {
-        printf("\n❌ Opcao invalida!\n");
+        printf("\n Opcao invalida!\n");
         fclose(arquivo);
         return;
     }
@@ -284,7 +284,7 @@ void buscarLivro() {
     }
 
     if (!encontrou) {
-        printf("\n❌ Nenhum livro correspondente foi encontrado.\n");
+        printf("\n Nenhum livro correspondente foi encontrado.\n");
     }
 
     fclose(arquivo);
@@ -984,7 +984,7 @@ void atualizarEstoqueLivro(int codigo, int delta) {
     FILE *temp = fopen("temp.txt",   "w");
 
     if (arq == NULL || temp == NULL) {
-        printf("\n❌ Erro ao abrir arquivo de livros!\n");
+        printf("\n Erro ao abrir arquivo de livros!\n");
         if (arq)  fclose(arq);
         if (temp) fclose(temp);
         return;
@@ -1025,7 +1025,7 @@ void realizarEmprestimo(usuario vetor_usuarios[], int total_usuarios,
 
     limpaTela();
     desenhaBorda();
-    printf("\n  📚  EFETUAR NOVO EMPRESTIMO  📚\n");
+    printf("\n    EFETUAR NOVO EMPRESTIMO  \n");
     desenhaBorda();
 
     // ETAPA 1 — Verificar usuário
@@ -1040,13 +1040,13 @@ void realizarEmprestimo(usuario vetor_usuarios[], int total_usuarios,
     }
 
     if (index_usuario == -1) {
-        printf("\n❌ Erro: Usuario com matricula %d nao cadastrado!\n", mat_busca);
+        printf("\n Erro: Usuario com matricula %d nao cadastrado!\n", mat_busca);
         aguardarEnter();
         return;
     }
 
     if (vetor_usuarios[index_usuario].qtd_emprestimos_ativos >= 3) {
-        printf("\n❌ Erro: %s ja atingiu o limite de 3 emprestimos ativos!\n",
+        printf("\n Erro: %s ja atingiu o limite de 3 emprestimos ativos!\n",
                vetor_usuarios[index_usuario].nome);
         aguardarEnter();
         return;
@@ -1095,7 +1095,7 @@ void realizarEmprestimo(usuario vetor_usuarios[], int total_usuarios,
         return;
     }
 
-    printf("\n✅ Livro '%s' disponivel! Registrando...\n", l_temp.titulo);
+    printf("\n Livro '%s' disponivel! Registrando...\n", l_temp.titulo);
 
     // ETAPA 3 — Gerar datas
     time_t t = time(NULL);
@@ -1129,15 +1129,15 @@ void realizarEmprestimo(usuario vetor_usuarios[], int total_usuarios,
 
     // ETAPA 7 — Recibo
     desenhaBorda();
-    printf("  🤝  EMPRESTIMO REGISTRADO COM SUCESSO!\n");
+    printf("   EMPRESTIMO REGISTRADO COM SUCESSO!\n");
     desenhaBorda();
-    printf("  🔹 ID da Operacao:     %d\n",   novo_id);
-    printf("  🔹 Usuario:            %s (Matricula: %d)\n",
+    printf("   ID da Operacao:     %d\n",   novo_id);
+    printf("   Usuario:            %s (Matricula: %d)\n",
            vetor_usuarios[index_usuario].nome, mat_busca);
-    printf("  🔹 Livro:              %s (Codigo: %d)\n", l_temp.titulo, cod_busca);
-    printf("  🔹 Data de Retirada:   %s\n",   data_retirada);
-    printf("  🔹 Prazo Maximo:       %s (14 dias)\n", data_prevista);
-    printf("  🔹 Emprestimos ativos: %d/3\n",
+    printf("   Livro:              %s (Codigo: %d)\n", l_temp.titulo, cod_busca);
+    printf("   Data de Retirada:   %s\n",   data_retirada);
+    printf("   Prazo Maximo:       %s (14 dias)\n", data_prevista);
+    printf("   Emprestimos ativos: %d/3\n",
            vetor_usuarios[index_usuario].qtd_emprestimos_ativos);
     desenhaBorda();
 
@@ -1153,7 +1153,7 @@ void realizarDevolucao(usuario vetor_usuarios[], int total_usuarios,
 
     limpaTela();
     desenhaBorda();
-    printf("\n  ↩️   REGISTRAR DEVOLUCAO DE LIVRO   ↩️\n");
+    printf("\n    REGISTRAR DEVOLUCAO DE LIVRO   \n");
     desenhaBorda();
 
     printf("Digite o ID do emprestimo (Protocolo): ");
@@ -1164,7 +1164,7 @@ void realizarDevolucao(usuario vetor_usuarios[], int total_usuarios,
     FILE *arq_temp = fopen("temp_emprestimos.txt", "w");
 
     if (arq_emp == NULL || arq_temp == NULL) {
-        printf("\n❌ Erro ao abrir arquivos de emprestimos!\n");
+        printf("\n Erro ao abrir arquivos de emprestimos!\n");
         if (arq_emp)  fclose(arq_emp);
         if (arq_temp) fclose(arq_temp);
         aguardarEnter();
@@ -1240,14 +1240,14 @@ void realizarDevolucao(usuario vetor_usuarios[], int total_usuarios,
 
     // ETAPA 5 — Recibo
     desenhaBorda();
-    printf("  ✅  DEVOLUCAO REGISTRADA COM SUCESSO!\n");
+    printf("    DEVOLUCAO REGISTRADA COM SUCESSO!\n");
     desenhaBorda();
-    printf("  🔹 ID do Emprestimo:  %d\n",  emp_temp.id);
-    printf("  🔹 Codigo do Livro:   %d\n",  emp_temp.codigo_livro);
-    printf("  🔹 Matricula:         %d\n",  emp_temp.matricula_usuario);
-    printf("  🔹 Retirada em:       %s\n",  emp_temp.data_retirada);
-    printf("  🔹 Prazo era:         %s\n",  emp_temp.data_prevista);
-    printf("  🔹 Devolvido em:      %s\n",  emp_temp.data_devolucao);
+    printf("   ID do Emprestimo:  %d\n",  emp_temp.id);
+    printf("   Codigo do Livro:   %d\n",  emp_temp.codigo_livro);
+    printf("   Matricula:         %d\n",  emp_temp.matricula_usuario);
+    printf("   Retirada em:       %s\n",  emp_temp.data_retirada);
+    printf("   Prazo era:         %s\n",  emp_temp.data_prevista);
+    printf("   Devolvido em:      %s\n",  emp_temp.data_devolucao);
     desenhaBorda();
 
     aguardarEnter();
@@ -1258,7 +1258,7 @@ void listarEmprestimosEmAtraso(emprestimo vetor_emprestimos[], int total_emprest
                                 usuario vetor_usuarios[], int total_usuarios) {
     limpaTela();
     desenhaBorda();
-    printf("\n  ⏰  EMPRESTIMOS EM ATRASO  ⏰\n");
+    printf("\n    EMPRESTIMOS EM ATRASO  \n");
     desenhaBorda();
 
     // Data de hoje no formato ordenável AAAAMMDD
@@ -1317,7 +1317,7 @@ void listarEmprestimosEmAtraso(emprestimo vetor_emprestimos[], int total_emprest
             }
         }
 
-        printf("  🔴 ID: %-4d | Matricula: %-6d | Usuario: %s\n",
+        printf("   ID: %-4d | Matricula: %-6d | Usuario: %s\n",
                vetor_emprestimos[i].id,
                vetor_emprestimos[i].matricula_usuario,
                nome_usuario);
@@ -1334,7 +1334,7 @@ void listarEmprestimosEmAtraso(emprestimo vetor_emprestimos[], int total_emprest
     if (arq_livros != NULL) fclose(arq_livros);
 
     if (qtd_atraso == 0)
-        printf("  ✅ Nenhum emprestimo em atraso.\n");
+        printf("   Nenhum emprestimo em atraso.\n");
     else
         printf("\n  Total em atraso: %d\n", qtd_atraso);
 
@@ -1349,7 +1349,7 @@ void menuEmprestimos(usuario vetor_usuarios[], int total_usuarios, emprestimo ve
     do {
         limpaTela();
         desenhaBorda();
-        printf("\n  📋  GERENCIAR EMPRESTIMOS\n");
+        printf("\n   GERENCIAR EMPRESTIMOS\n");
         desenhaBorda();
         printf("  1. Realizar emprestimo\n");
         printf("  2. Listar emprestimos em atraso\n");
@@ -1372,7 +1372,7 @@ void menuEmprestimos(usuario vetor_usuarios[], int total_usuarios, emprestimo ve
             default:
                 limpaTela();
                 desenhaBorda();
-                printf("\n  ❌ Opcao invalida! Digite 0, 1 ou 2.\n");
+                printf("\n   Opcao invalida! Digite 0, 1 ou 2.\n");
                 desenhaBorda();
                 aguardarEnter();
                 break;
