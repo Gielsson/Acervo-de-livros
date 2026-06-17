@@ -56,6 +56,22 @@ livro lerLivro(FILE *arq) {
     fscanf(arq, "%d\n", &dado.total_emprestimos);
     return dado;
 }
+//função para ler os 
+void lerEmprestimos(emprestimo vetor[], int *total) {
+    FILE *arquivo = fopen("emprestimos.txt", "r");
+    if (arquivo == NULL) return;
+
+    while (fscanf(arquivo, "%d\n", &vetor[*total].id) != EOF) {
+        fscanf(arquivo, "%d\n", &vetor[*total].matricula_usuario);
+        fscanf(arquivo, "%d\n", &vetor[*total].codigo_livro);
+        fscanf(arquivo, "%[^\n]\n", vetor[*total].data_retirada);
+        fscanf(arquivo, "%[^\n]\n", vetor[*total].data_prevista);
+        fscanf(arquivo, "%[^\n]\n", vetor[*total].data_devolucao);
+        fscanf(arquivo, "%d\n", &vetor[*total].devolvido);
+        (*total)++;
+    }
+    fclose(arquivo);
+}
 void gravarLivro(FILE *arq, livro dado){ // grava um livro no arquivo
     fprintf(arq, "%d\n", dado.codigo);
     fprintf(arq, "%s\n", dado.titulo);
@@ -578,6 +594,21 @@ void LerUsuarios(usuario lista_usuarios[], int *tam_usuarios){
     fclose(arquivo);
 
 }
+void lerEmprestimos(emprestimo vetor[], int *total) {
+    FILE *arquivo = fopen("emprestimos.txt", "r");
+    if (arquivo == NULL) return;
+ 
+    while (fscanf(arquivo, "%d\n", &vetor[*total].id) != EOF) {
+        fscanf(arquivo, "%d\n", &vetor[*total].matricula_usuario);
+        fscanf(arquivo, "%d\n", &vetor[*total].codigo_livro);
+        fscanf(arquivo, "%[^\n]\n", vetor[*total].data_retirada);
+        fscanf(arquivo, "%[^\n]\n", vetor[*total].data_prevista);
+        fscanf(arquivo, "%[^\n]\n", vetor[*total].data_devolucao);
+        fscanf(arquivo, "%d\n", &vetor[*total].devolvido);
+        (*total)++;
+    }
+    fclose(arquivo);
+}
 int obterProximaMatricula(){
     FILE *arquivo = fopen("usuarios.txt", "r");
 
@@ -969,7 +1000,6 @@ void realizarEmprestimo(usuario vetor_usuarios[], int total_usuarios, emprestimo
 void realizarDevolucao(usuario vetor_usuarios[], int total_usuarios, emprestimo vetor_emprestimos[], int *total_emprestimos);
 void listarEmprestimosEmAtraso(emprestimo vetor_emprestimos[], int total_emprestimos, usuario vetor_usuarios[], int total_usuarios);
 void menuEmprestimos(usuario vetor_usuarios[], int total_usuarios, emprestimo vetor_emprestimos[], int *total_emprestimos);
-
 // Funcoes Auxiliares 
 // Evita repetir o bloco while/getchar por todo o código
 void aguardarEnter() {
@@ -1121,12 +1151,12 @@ void realizarEmprestimo(usuario vetor_usuarios[], int total_usuarios,
     fclose(arq_emp);
 
     // Atualiza estoque (-1 disponível)
-    atualizarEstoqueLivro(cod_busca, -1);
+    atualizarEstoqueLivro(cod_busca, -1); 
 
     // Atualiza contadores em memória
     vetor_usuarios[index_usuario].qtd_emprestimos_ativos++;
     (*total_emprestimos)++;
-
+ SalvarUsuarios(vetor_usuarios, total_usuarios);//salva usuarios.txt após incrementar qtd_emprestimos_ativos
     //  Recibo
     desenhaBorda();
     printf("   EMPRESTIMO REGISTRADO COM SUCESSO!\n");
@@ -1813,6 +1843,8 @@ setlocale(LC_ALL, "Portuguese");
      emprestimo vetor_emprestimos[5000];// Vetor de empréstimos (usado para controlar o próximo ID)
      int total_emprestimos = 0;
 
+	 lerEmprestimos(vetor_emprestimos, &total_emprestimos);
+
      int opcao, opcao2,opcaoSecundar; // variavel usada para guardar a opção escolhida  pelo usuário do menu
      
 do{
@@ -2025,8 +2057,6 @@ limpaTela();
     limpaTela();
     break;
     default:
-    printf("opcao 6 foi escolhida\n");
-    break;
 }
 } while (opcao != 6); // O programa continua rodando ATÉ o usuário digitar 6
 
