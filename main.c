@@ -713,7 +713,7 @@ void buscarUsuario(usuario lista_usuarios[], int tam_usuarios) {
 
     int encontrou = 0;
 
-    // percorre o vetor que já está na memória RAM
+    // percorre o vetor que já está na memória
     for (int i = 0; i < tam_usuarios; i++) {
         int corresponde = 0;
 
@@ -762,7 +762,7 @@ void informarLivrosEmprestadosDoUsuario(usuario lista_usuarios[], int tam_usuari
     scanf("%d", &mat_busca);
     getchar();
 
-    // primeiro confirma se a matricula existe no vetor em RAM
+    // primeiro confirma se a matricula existe no vetor 
     int usuario_encontrado = 0;
     char nome_usuario[250] = "";
  
@@ -1006,7 +1006,7 @@ void atualizarEstoqueLivro(int codigo, int delta) {
         }
         
 
-       gravarLivro(temp, l); // usando a função declarada em gerenciamento de livros,na qual eh escrita\fprintf nos dados do livro
+       gravarLivro(temp, l); // usando a função declarada em gerenciamento de livros, a qual da fprintf nos dados do livro
     }
 
     fclose(arq);
@@ -1028,7 +1028,7 @@ void realizarEmprestimo(usuario vetor_usuarios[], int total_usuarios,
     printf("\n    EFETUAR NOVO EMPRESTIMO  \n");
     desenhaBorda();
 
-    // ETAPA 1 — Verificar usuário
+    //  Verifica usuário
     printf("Digite a matricula do usuario: ");
     scanf("%d", &mat_busca);
 
@@ -1054,7 +1054,7 @@ void realizarEmprestimo(usuario vetor_usuarios[], int total_usuarios,
 
     printf("\n Usuario %s liberado!\n", vetor_usuarios[index_usuario].nome);
 
-    // ETAPA 2 — Verificar livro
+    // Verifica livro
     printf("\nDigite o codigo do livro desejado: ");
     scanf("%d", &cod_busca);
 
@@ -1097,7 +1097,7 @@ void realizarEmprestimo(usuario vetor_usuarios[], int total_usuarios,
 
     printf("\n Livro '%s' disponivel! Registrando...\n", l_temp.titulo);
 
-    // ETAPA 3 — Gerar datas
+    // Gera datas
     time_t t = time(NULL);
     struct tm *tm_atual = localtime(&t);
     char data_retirada[11], data_prevista[11];
@@ -1107,7 +1107,7 @@ void realizarEmprestimo(usuario vetor_usuarios[], int total_usuarios,
     tm_atual = localtime(&t);
     strftime(data_prevista, sizeof(data_prevista), "%d/%m/%Y", tm_atual);
 
-    // ETAPA 4 — Gravar empréstimo
+    //  Grava empréstimo
     FILE *arq_emp = fopen("emprestimos.txt", "a");
     if (arq_emp == NULL) {
         printf("\n Erro ao abrir emprestimos.txt!\n");
@@ -1120,14 +1120,14 @@ void realizarEmprestimo(usuario vetor_usuarios[], int total_usuarios,
             novo_id, mat_busca, cod_busca, data_retirada, data_prevista);
     fclose(arq_emp);
 
-    // ETAPA 5 — Atualizar estoque (-1 disponível)
+    // Atualiza estoque (-1 disponível)
     atualizarEstoqueLivro(cod_busca, -1);
 
-    // ETAPA 6 — Atualizar contadores em memória
+    // Atualiza contadores em memória
     vetor_usuarios[index_usuario].qtd_emprestimos_ativos++;
     (*total_emprestimos)++;
 
-    // ETAPA 7 — Recibo
+    //  Recibo
     desenhaBorda();
     printf("   EMPRESTIMO REGISTRADO COM SUCESSO!\n");
     desenhaBorda();
@@ -1159,7 +1159,7 @@ void realizarDevolucao(usuario vetor_usuarios[], int total_usuarios,
     printf("Digite o ID do emprestimo (Protocolo): ");
     scanf("%d", &id_busca);
 
-    // ETAPA 1 — Reescrever emprestimos.txt marcando o registro como devolvido
+    //Reescreve emprestimos.txt marcando o registro como devolvido
     FILE *arq_emp  = fopen("emprestimos.txt", "r");
     FILE *arq_temp = fopen("temp_emprestimos.txt", "w");
 
@@ -1206,7 +1206,7 @@ void realizarDevolucao(usuario vetor_usuarios[], int total_usuarios,
         return;
     }
 
-    // ETAPA 2 — Atualizar vetor de empréstimos em memória
+    //  Atualiza vetor de empréstimos em memória
     for (int i = 0; i < *total_emprestimos; i++) {
         if (vetor_emprestimos[i].id == id_busca) {
             vetor_emprestimos[i].devolvido = 1;
@@ -1215,7 +1215,7 @@ void realizarDevolucao(usuario vetor_usuarios[], int total_usuarios,
         }
     }
 
-    // ETAPA 3 — Atualizar estoque (+1 disponível)
+    //Atualiza estoque (+1 disponível)
     atualizarEstoqueLivro(emp_temp.codigo_livro, +1);
 
     // ETAPA 4 — Atualizar contador do usuário e regravar usuarios.txt
@@ -1238,7 +1238,7 @@ void realizarDevolucao(usuario vetor_usuarios[], int total_usuarios,
         fclose(arq_usuarios);
     }
 
-    // ETAPA 5 — Recibo
+    //  Recibo
     desenhaBorda();
     printf("    DEVOLUCAO REGISTRADA COM SUCESSO!\n");
     desenhaBorda();
