@@ -594,21 +594,6 @@ void LerUsuarios(usuario lista_usuarios[], int *tam_usuarios){
     fclose(arquivo);
 
 }
-void lerEmprestimos(emprestimo vetor[], int *total) {
-    FILE *arquivo = fopen("emprestimos.txt", "r");
-    if (arquivo == NULL) return;
- 
-    while (fscanf(arquivo, "%d\n", &vetor[*total].id) != EOF) {
-        fscanf(arquivo, "%d\n", &vetor[*total].matricula_usuario);
-        fscanf(arquivo, "%d\n", &vetor[*total].codigo_livro);
-        fscanf(arquivo, "%[^\n]\n", vetor[*total].data_retirada);
-        fscanf(arquivo, "%[^\n]\n", vetor[*total].data_prevista);
-        fscanf(arquivo, "%[^\n]\n", vetor[*total].data_devolucao);
-        fscanf(arquivo, "%d\n", &vetor[*total].devolvido);
-        (*total)++;
-    }
-    fclose(arquivo);
-}
 int obterProximaMatricula(){
     FILE *arquivo = fopen("usuarios.txt", "r");
 
