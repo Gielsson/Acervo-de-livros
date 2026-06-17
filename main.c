@@ -777,7 +777,7 @@ void buscarUsuario(usuario lista_usuarios[], int tam_usuarios) {
         printf("\n Nenhum usuario correspondente foi encontrado.\n");
     }
 }
-
+//listar todos os livros que estão atualmente emprestados (pendentes) para um usuario
 void informarLivrosEmprestadosDoUsuario(usuario lista_usuarios[], int tam_usuarios) {
     limpaTela();
     desenhaBorda();
@@ -795,7 +795,7 @@ void informarLivrosEmprestadosDoUsuario(usuario lista_usuarios[], int tam_usuari
  
     for (int i = 0; i < tam_usuarios; i++) {
         if (lista_usuarios[i].matricula == mat_busca) {
-            usuario_encontrado = 1;
+            usuario_encontrado = 1; //sinaliza que encontoru 
             strcpy(nome_usuario, lista_usuarios[i].nome); // guarda o nome para exibir
             break;
         }
@@ -808,6 +808,7 @@ void informarLivrosEmprestadosDoUsuario(usuario lista_usuarios[], int tam_usuari
     // abre o arquivo de empréstimos
     FILE *arq_emp = fopen("emprestimos.txt", "r");
     if (arq_emp == NULL) {
+		//se o arquivo não existir ou não puder ser aberto, assume-se que não há empréstimos no sistema
         printf("\nO usuario %s nao possui livros emprestados no momento.\n", nome_usuario);
         return;
     }
@@ -823,7 +824,7 @@ void informarLivrosEmprestadosDoUsuario(usuario lista_usuarios[], int tam_usuari
         fscanf(arq_emp, "%[^\n]\n", emp.data_devolucao);
         fscanf(arq_emp, "%d\n", &emp.devolvido);
 
-        // se o empréstimo for deste usuário e ainda não foi devolvido
+        // confere se o empréstimo for deste usuário e ainda não foi devolvido
         if (emp.matricula_usuario == mat_busca && emp.devolvido == 0) {
             if (!achou_emprestimo) {
                 printf("\nUsuario: %s (Matricula: %d)\n", nome_usuario, mat_busca);
@@ -838,7 +839,7 @@ void informarLivrosEmprestadosDoUsuario(usuario lista_usuarios[], int tam_usuari
             
             if (arq_livros != NULL) {
                 livro aux_livro;
-                // lendo o arquivo de livros no mesmo padrão estruturado do seu grupo
+                // lendo o arquivo de livros
                 while (fscanf(arq_livros, "%d\n", &aux_livro.codigo) != EOF) {
                     fscanf(arq_livros, "%[^\n]\n", aux_livro.titulo);
                     fscanf(arq_livros, "%[^\n]\n", aux_livro.autor);
@@ -865,7 +866,8 @@ void informarLivrosEmprestadosDoUsuario(usuario lista_usuarios[], int tam_usuari
         }
     }
     fclose(arq_emp); // fecha o arquivo de empréstimos
-
+//para esse if ser executado o valor da variavel não pode ser 1. Ele so seria 1 se o if anterior fosse verdade, o que indica que
+	//o usuario não possui emprestimmos no momento 
     if (!achou_emprestimo) {
         printf("\nO usuario %s nao possui livros emprestados no momento.\n", nome_usuario);
     }
