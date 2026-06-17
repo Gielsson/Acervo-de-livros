@@ -193,7 +193,7 @@ encontrou =1;
 void buscarLivro() {
     FILE *arquivo = fopen("livros.txt", "r");
     if (arquivo == NULL) {
-        printf("\n❌ Nenhum livro cadastrado no sistema ainda.\n");
+        printf("\n Nenhum livro cadastrado no sistema ainda.\n");
         return;
     }
 
