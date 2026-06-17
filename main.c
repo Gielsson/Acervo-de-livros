@@ -1052,7 +1052,7 @@ void realizarEmprestimo(usuario vetor_usuarios[], int total_usuarios,
         return;
     }
 
-    printf("\n✅ Usuario %s liberado!\n", vetor_usuarios[index_usuario].nome);
+    printf("\n Usuario %s liberado!\n", vetor_usuarios[index_usuario].nome);
 
     // ETAPA 2 — Verificar livro
     printf("\nDigite o codigo do livro desejado: ");
@@ -1063,7 +1063,7 @@ void realizarEmprestimo(usuario vetor_usuarios[], int total_usuarios,
 
     FILE *arq_livros = fopen("livros.txt", "r");
     if (arq_livros == NULL) {
-        printf("\n❌ Erro ao abrir arquivo de livros!\n");
+        printf("\n Erro ao abrir arquivo de livros!\n");
         aguardarEnter();
         return;
     }
