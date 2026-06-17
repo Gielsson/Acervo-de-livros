@@ -576,7 +576,7 @@ void informarEmprestimosDoLivro(usuario lista_usuarios[], int tam_usuarios){
         printf("\nO livro '%s' nao possui emprestimos ativos no momento.\n", titulo_livro);
     }
 }
-
+//carrega todos os usuários do arquivo "usuarios.txt" para a memória
 void LerUsuarios(usuario lista_usuarios[], int *tam_usuarios){
     FILE *arquivo = fopen("usuarios.txt", "r");
 
@@ -594,15 +594,17 @@ void LerUsuarios(usuario lista_usuarios[], int *tam_usuarios){
     fclose(arquivo);
 
 }
+ //descobre qual deve ser a matrícula do PRÓXIMO usuário
 int obterProximaMatricula(){
     FILE *arquivo = fopen("usuarios.txt", "r");
-
+// se o arquivo ainda não existe, significa que nenhum usuário foi cadastrado
+	
     if(arquivo == NULL){
-        return 202600;
+        return 202600;//então o primeiro usuario vai ter essa matricula
     }
 
     usuario info;
-    int ultimaMatricula = 202599; // valor base: uma abaixo de 202600
+    int ultimaMatricula = 202599; // valor base: uma abaixo de 202600, isso garante que, se o arquivo existir mas estiver vazio,
 
 
     while(fscanf(arquivo, "%d\n", &info.matricula) != EOF){
@@ -610,17 +612,18 @@ int obterProximaMatricula(){
         fscanf(arquivo, "%[^\n]\n", info.curso);
         fscanf(arquivo, "%d\n", &info.qtd_emprestimos_ativos);
 
+    //quando o laço terminar, ela vai conter a matrícula do ÚLTIMO usuário cadastrado
         ultimaMatricula = info.matricula;
     }
 
     fclose(arquivo);
 
-    return ultimaMatricula + 1;
+    return ultimaMatricula + 1; //returna a matricula do usuario que esta sendo cadastrado
 }
-// insere novo perfil
+// registra um ou mais novos usuários no sistema
 void cadastrarUsuario(usuario lista_usuarios[], int *tam_usuarios) {
-    char continuar;
-
+    char continuar;// guarda a resposta (S/N) se o usuário quer cadastrar outro
+//usamos do while pra cadastrar pelo menos 1 usuario antes de perguntar se quer continuar
     do {
         // impede cadastro se o vetor ja estiver cheio
         if (*tam_usuarios >= 1000) {
@@ -667,10 +670,13 @@ void cadastrarUsuario(usuario lista_usuarios[], int *tam_usuarios) {
         printf("\nDeseja continuar cadastrando? (S/N): ");
         scanf(" %c", &continuar);
         getchar();
-        continuar = tolower(continuar);
+        continuar = tolower(continuar);//transgorma o caractere lido em minusculo para fazer uma comparação mais precisa
 
     } while(continuar == 's'); 
 }
+//lista os usuarios cadastrados no sistema. Ela lê diretamente do vetor na memoria (lista_usuarios), e não do
+// arquivo. Isso é mais rápido, já que os dados já foram carregados no início
+// do programa pela função LerUsuarios.
 void ListarUsuarios(usuario lista_usuarios[], int tam_usuarios){
 
     limpaTela();
@@ -679,7 +685,7 @@ void ListarUsuarios(usuario lista_usuarios[], int tam_usuarios){
         printf("Nenhum usuario cadastrado ainda.\n");
         return;
     }
-
+//printa todos os usuarios do vetor 
     for(int i=0;i < tam_usuarios;i++){
         printf("Nome: %s\n", lista_usuarios[i].nome);
         printf("Curso: %s\n", lista_usuarios[i].curso);
@@ -688,12 +694,13 @@ void ListarUsuarios(usuario lista_usuarios[], int tam_usuarios){
 desenhaBorda();
     }    
 }
+//função de busca de usuario por matricula ou nome
 void buscarUsuario(usuario lista_usuarios[], int tam_usuarios) {
     limpaTela();
     desenhaBorda();
     printf("\n BUSCAR USUARIO NO SISTEMA \n");
     desenhaBorda();
-
+ // nao busca se ainda não há nenhum usuário no sistema
     if (tam_usuarios == 0) {
         printf("\n Nenhum usuario cadastrado no sistema ate o momento.\n");
         return;
@@ -718,36 +725,38 @@ void buscarUsuario(usuario lista_usuarios[], int tam_usuarios) {
         scanf(" %[^\n]", termo_busca);
         getchar();
         
-        // coloca o termo buscado em minúsculo para busca insensível a maiúsculas
+        // transforma o termo digitado para minúsculo, caractere por caractere.
         for(int i = 0; termo_busca[i]; i++) {
             termo_busca[i] = tolower(termo_busca[i]);
         }
     } else {
+		 //se o usuário digitou uma opção diferente de 1 ou 2, avisa e sai
         printf("\n Opcao invalida!\n");
         return;
     }
 
-    int encontrou = 0;
+    int encontrou = 0; // controla se já achamos pelo menos um usuário
 
     // percorre o vetor que já está na memória
     for (int i = 0; i < tam_usuarios; i++) {
-        int corresponde = 0;
+        int corresponde = 0; //indica se esse usuário específico bate com a busca
 
         if (tipo_busca == 1 && lista_usuarios[i].matricula == mat_busca) {
             corresponde = 1;
         } else if (tipo_busca == 2) {
-            // cria cópia em minúsculo do nome cadastrado para comparar
+            // cria cópia em minúsculo do nome cadastrado para comparar sem alterar a string original 
             char nome_minusculo[250];
             strcpy(nome_minusculo, lista_usuarios[i].nome);
             for(int j = 0; nome_minusculo[j]; j++) {
                 nome_minusculo[j] = tolower(nome_minusculo[j]);
             }
-            // strstr retorna NULL se nao encontrar o termo dentro do nome
+            // strstr retorna NULL se nao encontrar o termo dentro do nome, e um endereço
+            // válido se encontrar, por isso comparamos com NULL.
             if (strstr(nome_minusculo, termo_busca) != NULL) {
                 corresponde = 1;
             }
         }
-
+// imprime o cabeçalho só na primeira vez que algo é encontrado
         if (corresponde) {
             if (!encontrou) {
                 printf("\n --- USUARIO(S) ENCONTRADO(S) ---\n");
@@ -762,11 +771,13 @@ void buscarUsuario(usuario lista_usuarios[], int tam_usuarios) {
             if (tipo_busca == 1) break; // se achou por matrícula, pode parar o loop
         }
     }
-
+//nesse caso, se não achou o usuario, corresponde=0 e o if anterior não executou
+	//então, o valor de encontrou tambem não muda e sinaliza que nenhum usuario foi encontrado
     if (!encontrou) {
         printf("\n Nenhum usuario correspondente foi encontrado.\n");
     }
 }
+
 void informarLivrosEmprestadosDoUsuario(usuario lista_usuarios[], int tam_usuarios) {
     limpaTela();
     desenhaBorda();
@@ -859,6 +870,9 @@ void informarLivrosEmprestadosDoUsuario(usuario lista_usuarios[], int tam_usuari
         printf("\nO usuario %s nao possui livros emprestados no momento.\n", nome_usuario);
     }
 }
+// grava o arquivo "usuarios.txt" do ZERO, usando os dados
+// que estão no vetor em memória. É chamada sempre que algum usuário é
+// ATUALIZADO ou REMOVIDO
 void SalvarUsuarios(usuario lista_usuarios[], int tam_usuarios) {
     FILE *arquivo = fopen("usuarios.txt", "w"); // modo "w" apaga e recria o arquivo
     if (arquivo == NULL) {
@@ -874,6 +888,7 @@ void SalvarUsuarios(usuario lista_usuarios[], int tam_usuarios) {
     }
     fclose(arquivo);
 }
+//  permite alterar o nome e o curso de um usuário
 void atualizarUsuario(usuario lista_usuarios[], int tam_usuarios) {
     limpaTela();
     desenhaBorda();
@@ -896,10 +911,10 @@ void atualizarUsuario(usuario lista_usuarios[], int tam_usuarios) {
     for (int i = 0; i < tam_usuarios; i++) {
         if (lista_usuarios[i].matricula == mat_busca) {
             indice = i;
-            break;
+            break; // achou, não precisa continuar procurando (matrícula é única)
         }
     }
- 
+ // se o índice continuar -1, percorremos o vetor inteiro e não achamos
     if (indice == -1) {
         printf("\n Matricula %d nao encontrada.\n", mat_busca);
         return;
@@ -925,6 +940,8 @@ void atualizarUsuario(usuario lista_usuarios[], int tam_usuarios) {
 
     printf("\n Dados atualizados com sucesso!\n");
 }
+// remove um usuário do sistema, tanto da memória quanto
+// do arquivo, mas so se ele não tiver empréstimos em aberto
 void removerUsuario(usuario lista_usuarios[], int *tam_usuarios) {
     limpaTela();
     desenhaBorda();
@@ -968,7 +985,7 @@ void removerUsuario(usuario lista_usuarios[], int *tam_usuarios) {
         printf("\nOperacao cancelada.\n");
         return;
     }
-    //  "puxa" todos os elementos seguintes uma posição para trás
+    //  "puxa" todos os elementos seguintes uma posição para trás sobrescrevendo a posição do usuario que removi
     for (int i = indice; i < (*tam_usuarios) - 1; i++) {
         lista_usuarios[i] = lista_usuarios[i + 1];
     }
