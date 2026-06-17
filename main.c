@@ -1008,22 +1008,23 @@ void menuEmprestimos(usuario vetor_usuarios[], int total_usuarios, emprestimo ve
 // Evita repetir o bloco while/getchar por todo o código
 void aguardarEnter() {
     printf("\nPressione Enter para voltar ao menu...");
-    while (getchar() != '\n');
-    getchar();
+    while (getchar() != '\n'); //limpa o buffer de entrada, consumindo todos os caracteres restantes até encontrar a quebra de linha ('\n')
+    getchar(); //captura o 'Enter' final, pausando a tela de forma eficaz antes de retornar ao menu
 }
 // Abre livros.txt, aplica delta (+1 ou -1) na quantidade disponível do livro
 // indicado por 'codigo' e regrava o arquivo via arquivo temporário
 void atualizarEstoqueLivro(int codigo, int delta) {
-    FILE *arq  = fopen("livros.txt", "r");
-    FILE *temp = fopen("temp.txt",   "w");
+    FILE *arq  = fopen("livros.txt", "r"); //abre o arquivo original de livros em modo de leitura 
+    FILE *temp = fopen("temp.txt",   "w"); //abre o arquivo temporario em modo de escrita para salvar a base atualizada  
 
+	//validacao de seguranca: se um ou os dois arquivos falharem ao abrir, encerra a funcao para evitar falha de segmentacao
     if (arq == NULL || temp == NULL) {
         printf("\n Erro ao abrir arquivo de livros!\n");
         if (arq)  fclose(arq);
         if (temp) fclose(temp);
         return;
     }
-
+	//le o arquivo registro por registro ate atingir o fim do arquivo 
     livro l;
 	 while (fscanf(arq, "%d\n", &l.codigo) != EOF) {
     fscanf(arq, "%[^\n]\n", l.titulo);
@@ -1033,29 +1034,30 @@ void atualizarEstoqueLivro(int codigo, int delta) {
     fscanf(arq, "%d\n", &l.qtd_total);
     fscanf(arq, "%d\n", &l.quant_disp);
     fscanf(arq, "%d\n", &l.total_emprestimos);
-
+		 
+		//verifica se o livro lido no momento eh o livro alvo para ser modificado
         if (l.codigo == codigo) {
-            l.quant_disp =  l.quant_disp + delta;
-            if (delta < 0) l.total_emprestimos++; 
+            l.quant_disp =  l.quant_disp + delta;//atualiza a quantidade disponivel somando o delta (+1 se for devolucao, -1 se for emprestimo)
+            if (delta < 0) l.total_emprestimos++; //se o delta for negativo (emprestimo), incrementa o historico do total de emprestimos que esse livro ja teve 
         }
-        
 
        gravarLivro(temp, l); // usando a função declarada em gerenciamento de livros, a qual da fprintf nos dados do livro
     }
 
+	//fecha ambos os aquivos para garantir que todos os dados salvos no buffer sejam gravados no disco 
     fclose(arq);
     fclose(temp);
-    remove("livros.txt");
-    rename("temp.txt", "livros.txt");
+    remove("livros.txt"); //exclui a versao antiga e desatualizada do arquivo de livros 
+    rename("temp.txt", "livros.txt"); //renomeia o arquivo temporario e consolida as alteracoes 
 }
 
 // Funcao realizarEmprestimo
 void realizarEmprestimo(usuario vetor_usuarios[], int total_usuarios,
                         emprestimo vetor_emprestimos[], int *total_emprestimos) {
-    (void)vetor_emprestimos;
+    (void)vetor_emprestimos; //casting para void: silencia os avisos do compilador caso a variavel ainda nao esteja sendo usada nesta parte do codigo 
 
     int mat_busca, cod_busca;
-    int index_usuario = -1;
+    int index_usuario = -1; //inicia com -1 indicando que o usuario ainda nao foi encontrado no sistema 
 
     limpaTela();
     desenhaBorda();
@@ -1066,19 +1068,20 @@ void realizarEmprestimo(usuario vetor_usuarios[], int total_usuarios,
     printf("Digite a matricula do usuario: ");
     scanf("%d", &mat_busca);
 
+	//percorre o vetor de usuarios cadastrados um por um 
     for (int i = 0; i < total_usuarios; i++) {
-        if (vetor_usuarios[i].matricula == mat_busca) {
-            index_usuario = i;
+        if (vetor_usuarios[i].matricula == mat_busca) { //compara a matricula do usuario na posicao 'i'
+            index_usuario = i; //salva o indice onde o usuario foi encontrado no vetor
             break;
         }
     }
-
+	//se o indice continuou -1 apos o loop, significa que a matricula digitada nao existe no sistema 
     if (index_usuario == -1) {
         printf("\n Erro: Usuario com matricula %d nao cadastrado!\n", mat_busca);
         aguardarEnter();
         return;
     }
-
+	//impede o emprestimo se o usuario ja tiver 3 livros pendentes
     if (vetor_usuarios[index_usuario].qtd_emprestimos_ativos >= 3) {
         printf("\n Erro: %s ja atingiu o limite de 3 emprestimos ativos!\n",
                vetor_usuarios[index_usuario].nome);
@@ -1093,15 +1096,15 @@ void realizarEmprestimo(usuario vetor_usuarios[], int total_usuarios,
     scanf("%d", &cod_busca);
 
     livro l_temp;
-    int achou = 0;
+    int achou = 0; //variavel de controle: 0 para livro nao encontrado e 1 para encontrado 
 
-    FILE *arq_livros = fopen("livros.txt", "r");
-    if (arq_livros == NULL) {
+    FILE *arq_livros = fopen("livros.txt", "r"); //abre a base de dados de livros em modo de leitura 
+    if (arq_livros == NULL) { //tratamento de erro caso o arquivo de livros nao exista ou nao possa ser lido 
         printf("\n Erro ao abrir arquivo de livros!\n");
         aguardarEnter();
         return;
     }
-
+	//loop de busca, le os dados de cada livro sequencialmente do arquivo 
     while (fscanf(arq_livros, "%d\n", &l_temp.codigo) != EOF) {
         fscanf(arq_livros, "%[^\n]\n", l_temp.titulo);
         fscanf(arq_livros, "%[^\n]\n", l_temp.autor);
@@ -1110,19 +1113,19 @@ void realizarEmprestimo(usuario vetor_usuarios[], int total_usuarios,
         fscanf(arq_livros, "%d\n", &l_temp.qtd_total);
         fscanf(arq_livros, "%d\n", &l_temp.quant_disp);
         fscanf(arq_livros, "%d\n", &l_temp.total_emprestimos);
-        if (l_temp.codigo == cod_busca) { 
-            achou = 1; 
-            break;
+        if (l_temp.codigo == cod_busca) { //verifica se o codigo lido do arquivo eh igual ao codigo que o usuario digitou
+            achou = 1; //atualiza a flag indicando que o livro foi localizado com sucesso 
+            break; //para a leitura do arquivo imediatamente 
             }
     }
-    fclose(arq_livros);
+    fclose(arq_livros); //fecha o arquivo de livros 
  
     if (!achou) {
         printf("\n Erro: Codigo %d nao encontrado!\n", cod_busca);
         aguardarEnter();
-        return;
+        return; //se a flag continuar 0, significa que o codigo do livro nao existe no arquivo 
     }
- 
+ 	//verifica se o livro foi encontrado, mas nao ha exemplares disponiveis
     if (l_temp.quant_disp <= 0) {
         printf("\n Erro: '%s' esta esgotado!\n", l_temp.titulo);
         aguardarEnter();
@@ -1132,26 +1135,28 @@ void realizarEmprestimo(usuario vetor_usuarios[], int total_usuarios,
     printf("\n Livro '%s' disponivel! Registrando...\n", l_temp.titulo);
 
     // Gera datas
-    time_t t = time(NULL);
-    struct tm *tm_atual = localtime(&t);
-    char data_retirada[11], data_prevista[11];
+	//captura o horario atual do sistema em segundos e armazena na variavel 't'
+    time_t t = time(NULL); 
+    struct tm *tm_atual = localtime(&t); //converte os segundos de 't' para uma estrutura que divide o tempo em dia, mes, ano, ajustada ao fuso horario local
+    char data_retirada[11], data_prevista[11]; //declara as strings de tamanho 11 para armazenar as datas no formato "DD/MM/AAAA" (10 caracteres + '\0')
 
+	//formata a estrutura de tempo atual em formato de texto "Dia/Mes/Ano" e guarda na string 'data_retirada'
     strftime(data_retirada, sizeof(data_retirada), "%d/%m/%Y", tm_atual);
-    t += 14 * 24 * 60 * 60;
-    tm_atual = localtime(&t);
-    strftime(data_prevista, sizeof(data_prevista), "%d/%m/%Y", tm_atual);
+    t += 14 * 24 * 60 * 60; //avanca o tempo em 14 dias: adiciona a 't' equivalente a 14 dias convertendo em segundos (14 dias * 24 horas * 60 minutos * 60 segundos)
+	tm_atual = localtime(&t); //recalcula  a estrutura de tempo baseada no novo valor de 't' (que agora esta projetado para daqui a 14 dias)
+    strftime(data_prevista, sizeof(data_prevista), "%d/%m/%Y", tm_atual); //formata essa nova data calculada em texto e armazena na string 'data_prevista'
 
     //  Grava empréstimo
-    FILE *arq_emp = fopen("emprestimos.txt", "a");
+    FILE *arq_emp = fopen("emprestimos.txt", "a"); //abre o arquivo de emprestimos em modo Append que adiciona novos dados sempre ao final do arquivo sem apagar o que ja existe 
     if (arq_emp == NULL) {
         printf("\n Erro ao abrir emprestimos.txt!\n");
         aguardarEnter();
         return;
     }
-
+	//define o id do novo emprestimo somando 1 ao total acumulado de emprestimos no sistema 
     int novo_id = *total_emprestimos + 1;
     fprintf(arq_emp, "%d\n%d\n%d\n%s\n%s\n00/00/0000\n0\n",
-            novo_id, mat_busca, cod_busca, data_retirada, data_prevista);
+            novo_id, mat_busca, cod_busca, data_retirada, data_prevista); //grava os dados do emprestimo formatados no arquivo e incializa os campos de devolucao zerados 
     fclose(arq_emp);
 
     // Atualiza estoque (-1 disponível)
@@ -1181,9 +1186,9 @@ void realizarEmprestimo(usuario vetor_usuarios[], int total_usuarios,
 // Funcao realizarDevolucao 
 void realizarDevolucao(usuario vetor_usuarios[], int total_usuarios,
                        emprestimo vetor_emprestimos[], int *total_emprestimos) {
-    int id_busca;
-    int encontrado = 0;
-    emprestimo emp_temp;
+    int id_busca; //armazena o numero do protocolo (id do emprestimo) que o usuario deseja devolver 
+    int encontrado = 0; //flag: 0 para emprestimo nao localizado ou ja devolvido, 1 para ativo e encontrado 
+    emprestimo emp_temp; //estrutura temporaria para armazenar os dados de cada emprestimo lido no arquivo durante a busca 
 
     limpaTela();
     desenhaBorda();
@@ -1194,9 +1199,10 @@ void realizarDevolucao(usuario vetor_usuarios[], int total_usuarios,
     scanf("%d", &id_busca);
 
     //Reescreve emprestimos.txt marcando o registro como devolvido
-    FILE *arq_emp  = fopen("emprestimos.txt", "r");
+    FILE *arq_emp  = fopen("emprestimos.txt", "r"); //abre o arquivo original de emprestimos em modo de leitura 
     FILE *arq_temp = fopen("temp_emprestimos.txt", "w");
 
+	//validacao de seguranca 
     if (arq_emp == NULL || arq_temp == NULL) {
         printf("\n Erro ao abrir arquivos de emprestimos!\n");
         if (arq_emp)  fclose(arq_emp);
@@ -1204,7 +1210,7 @@ void realizarDevolucao(usuario vetor_usuarios[], int total_usuarios,
         aguardarEnter();
         return;
     }
-
+	// loop de leitura, processa o arquivo registro por registro, garantindo que todos os 7 campos de cada emprestimo foram lidos corretamente
     while (fscanf(arq_emp, "%d\n%d\n%d\n%10[^\n]\n%10[^\n]\n%10[^\n]\n%d\n",
                   &emp_temp.id,
                   &emp_temp.matricula_usuario,
@@ -1213,27 +1219,31 @@ void realizarDevolucao(usuario vetor_usuarios[], int total_usuarios,
                   emp_temp.data_prevista,
                   emp_temp.data_devolucao,
                   &emp_temp.devolvido) == 7) {
-
+		
+		//verifica se o ID do registro atual coincide com o buscado e se o campo 'devoldido' eh 0 (se o emprestimo ainda esta ativo)
         if (emp_temp.id == id_busca && emp_temp.devolvido == 0) {
-            encontrado = 1;
-            emp_temp.devolvido = 1;
+            encontrado = 1; //sinaliza que o emprestimo foi localizado com sucesso 
+            emp_temp.devolvido = 1; //altera o status do emprestimo, muda a flag para 1, indicando que foi devolvido 
 
-            time_t t = time(NULL);
+			//captura a data exata do sistema neste momento e grava no campo 'data_devolucao', registrando o dia real em que o livro foi entregue 
+            time_t t = time(NULL); 
             strftime(emp_temp.data_devolucao, sizeof(emp_temp.data_devolucao),
                      "%d/%m/%Y", localtime(&t));
         }
-
+		//grava o registro lido no arquivo temporario e atualiza o status devolvido 
         fprintf(arq_temp, "%d\n%d\n%d\n%s\n%s\n%s\n%d\n",
                 emp_temp.id, emp_temp.matricula_usuario, emp_temp.codigo_livro,
                 emp_temp.data_retirada, emp_temp.data_prevista,
                 emp_temp.data_devolucao, emp_temp.devolvido);
     }
 
+	//fecha o arquivo para liberar a memoria e garantir a gravacao no disco 
     fclose(arq_emp);
     fclose(arq_temp);
-    remove("emprestimos.txt");
-    rename("temp_emprestimos.txt", "emprestimos.txt");
+    remove("emprestimos.txt"); //deleta a base de emprestimos antiga 
+    rename("temp_emprestimos.txt", "emprestimos.txt"); //renomeia o arquivo temporario atualizado
 
+	//	verifica se a variavel 'encontrado' continuou sendo 0 (falso) apos a varredura do arquivo 
     if (!encontrado) {
         printf("\n ID %d nao encontrado ou ja devolvido!\n", id_busca);
         aguardarEnter();
@@ -1252,24 +1262,24 @@ void realizarDevolucao(usuario vetor_usuarios[], int total_usuarios,
     //Atualiza estoque (+1 disponível)
     atualizarEstoqueLivro(emp_temp.codigo_livro, +1);
 
-    // ETAPA 4 — Atualizar contador do usuário e regravar usuarios.txt
+    // percorre o vetor de usuarios carregado na memoria para encontrar o aluno que fez a devolucao 
     for (int i = 0; i < total_usuarios; i++) {
         if (vetor_usuarios[i].matricula == emp_temp.matricula_usuario) {
-            if (vetor_usuarios[i].qtd_emprestimos_ativos > 0)
-                vetor_usuarios[i].qtd_emprestimos_ativos--;
+            if (vetor_usuarios[i].qtd_emprestimos_ativos > 0) //garante que o contador de emprestimos nao fique negativo 
+                vetor_usuarios[i].qtd_emprestimos_ativos--; //decrementa 1 da quantidade de emprestimos ativos liberando espaco para o usuario pegar novos livros 
             break;
         }
     }
 
-    FILE *arq_usuarios = fopen("usuarios.txt", "w");
+    FILE *arq_usuarios = fopen("usuarios.txt", "w"); //abre o arquivo de usuarios em modo de escrita para reescrever a lista atualizada 
     if (arq_usuarios != NULL) {
-        for (int i = 0; i < total_usuarios; i++) {
+        for (int i = 0; i < total_usuarios; i++) { //percorre todo o vetor de usuarios da memoria e grava linha por linha no arquivo limpo
              fprintf(arq_usuarios, "%d\n", vetor_usuarios[i].matricula);
             fprintf(arq_usuarios, "%s\n", vetor_usuarios[i].nome);
             fprintf(arq_usuarios, "%s\n", vetor_usuarios[i].curso);
             fprintf(arq_usuarios, "%d\n", vetor_usuarios[i].qtd_emprestimos_ativos);
         }
-        fclose(arq_usuarios);
+        fclose(arq_usuarios); //fecha o arquivo 
     }
 
     //  Recibo
@@ -1296,34 +1306,34 @@ void listarEmprestimosEmAtraso(emprestimo vetor_emprestimos[], int total_emprest
     desenhaBorda();
 
     // Data de hoje no formato ordenável AAAAMMDD
-    time_t t = time(NULL);
-    char data_hoje[11], hoje_ord[9];
-    strftime(data_hoje, sizeof(data_hoje), "%d/%m/%Y", localtime(&t));
+    time_t t = time(NULL); //captura o numero exato de segundos no momento em que a funcao roda 
+    char data_hoje[11], hoje_ord[9]; //declara arrays para armazenar as datas em formato de texto, reservando o espaco para o caractere nulo '\0' no final 
+    strftime(data_hoje, sizeof(data_hoje), "%d/%m/%Y", localtime(&t)); //converte o tempo 't' em segundos para o formato DD/MM/AAAA e guarda na variavel 'data_hoje' 
     printf("Data de hoje: %s\n\n", data_hoje);
 
-    // Monta AAAAMMDD a partir de DD/MM/AAAA usando sscanf — mais simples
-    int d, m, a;
-    sscanf(data_hoje, "%d/%d/%d", &d, &m, &a);
-    snprintf(hoje_ord, sizeof(hoje_ord), "%04d%02d%02d", a, m, d);
+    // Monta AAAAMMDD a partir de DD/MM/AAAA usando sscanf
+    int d, m, a; //variaveis inteiras para extrair dia, mes e ano separadamente 
+    sscanf(data_hoje, "%d/%d/%d", &d, &m, &a); //o 'sscanf' funciona como um scanner, le a string "DD/MM/AAAA" ignora as barras e guarda os numeros nas variaveis d, m e a 
+    snprintf(hoje_ord, sizeof(hoje_ord), "%04d%02d%02d", a, m, d); //remonta os numeros extraidos em uma nova string no padrao AAAAMMDD
 
     // Abre livros.txt uma única vez antes do loop
     FILE *arq_livros = fopen("livros.txt", "r");
 
-    int qtd_atraso = 0;
+    int qtd_atraso = 0; //inicializa o contador global de livros atrasados com 0 
 
-    for (int i = 0; i < total_emprestimos; i++) {
-        if (vetor_emprestimos[i].devolvido == 1) continue;
+    for (int i = 0; i < total_emprestimos; i++) { //inicia a varredura linear percorrendo todos os emprestimos registrados 
+        if (vetor_emprestimos[i].devolvido == 1) continue; //se o emprestimo ja foi devolvido, interrompe a iteracao atual e pula para o proximo emprestimo 
 
         // Converte data_prevista para AAAAMMDD
-        char *dp = vetor_emprestimos[i].data_prevista;
-        char prev_ord[9];
-        sscanf(dp, "%d/%d/%d", &d, &m, &a);
-        snprintf(prev_ord, sizeof(prev_ord), "%04d%02d%02d", a, m, d);
+        char *dp = vetor_emprestimos[i].data_prevista; //cria um ponteiro local 'dp' que aponta diretamente para a data prevista dentro do vetor, facilitando a leitura nas proximas linhas sem precisar copiar o dado 
+        char prev_ord[9]; //string de 9 posicoes para armazenar a data formatada 
+        sscanf(dp, "%d/%d/%d", &d, &m, &a); //extrai o dia, mes e ano separadamente da datam prevista 
+        snprintf(prev_ord, sizeof(prev_ord), "%04d%02d%02d", a, m, d); //remonta a dara no formato numerico comum 
 
-        if (strcmp(prev_ord, hoje_ord) >= 0) continue; // ainda no prazo
+        if (strcmp(prev_ord, hoje_ord) >= 0) continue; // compara cronologicamente a data prevista com a data de hoje. Se a previsao foi maior ou igual a hoje, o livro esta no prazo, entao pula para o proximo 
 
         // Busca nome do usuário
-        char *nome_usuario = "Desconhecido";
+        char *nome_usuario = "Desconhecido"; //define um nome generico inicial para evitar falhas ou exibicao de 'lixo' na memoria caso o sistema nao encontre a matricula do aluno 
         for (int j = 0; j < total_usuarios; j++) {
             if (vetor_usuarios[j].matricula == vetor_emprestimos[i].matricula_usuario) {
                 nome_usuario = vetor_usuarios[j].nome;
