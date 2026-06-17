@@ -106,13 +106,13 @@ while (fscanf(arquivo, "%d\n", &aux.codigo) != EOF){
     return ultimo_id + 1;
 }
 
-void cadastrarLivro(int id_automatico) { // id inicial calculado por obterProximoCodigo(); pode ser atualizado a cada novo cadastro
+void cadastrarLivro(int ultimo_id) { // ultimo id lido por obterProximoCodigo(); incrementado a cada novo cadastro
     char continuar;
-    do{
-    livro novo;
-    novo.codigo = id_automatico;
-    limpaTela();
-    printf("--- CADASTRANDO LIVRO (Codigo: %d) ---\n", id_automatico);
+    do {
+        livro novo;
+        novo.codigo = ultimo_id;
+        limpaTela();
+        printf("--- CADASTRANDO LIVRO (Codigo: %d) ---\n", ultimo_id);
     printf("Digite o titulo do livro: \n");
     scanf(" %[^\n]", novo.titulo); //%[^\n]s lê até apertar Enter
     printf("Digite o autor do livro: \n");
@@ -167,8 +167,8 @@ getchar();
         continuar = tolower(continuar);
     
     if(continuar == 's'){
-    id_automatico = obterProximoCodigo();
-    }
+            ultimo_id = obterProximoCodigo();
+        }
     } while (continuar == 's');
 }
 
