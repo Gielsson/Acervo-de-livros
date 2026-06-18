@@ -1160,7 +1160,7 @@ void realizarEmprestimo(usuario vetor_usuarios[], int total_usuarios,
     fclose(arq_emp);
 
     // Atualiza estoque (-1 disponível)
-    atualizarEstoqueLivro(cod_busca, -1); 
+    atualizarEstoqueLivro(cod_busca, -1); // -1 pq foi feitoum emprestimo, -1 exemplar
 
     // Atualiza contadores em memória
     vetor_usuarios[index_usuario].qtd_emprestimos_ativos++;
@@ -1306,7 +1306,7 @@ void listarEmprestimosEmAtraso(emprestimo vetor_emprestimos[], int total_emprest
     desenhaBorda();
 
     // Data de hoje no formato ordenável AAAAMMDD
-    time_t t = time(NULL); //captura o numero exato de segundos no momento em que a funcao roda 
+    time_t t = time(NULL); //obtem o tempo atual em segunfos
     char data_hoje[11], hoje_ord[9]; //declara arrays para armazenar as datas em formato de texto, reservando o espaco para o caractere nulo '\0' no final 
     strftime(data_hoje, sizeof(data_hoje), "%d/%m/%Y", localtime(&t)); //converte o tempo 't' em segundos para o formato DD/MM/AAAA e guarda na variavel 'data_hoje' 
     printf("Data de hoje: %s\n\n", data_hoje);
