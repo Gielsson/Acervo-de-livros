@@ -1501,6 +1501,7 @@ int carregarTodosLivros(livro lista[], int capacidade) {
     fclose(arq);
     return tam;
 }
+  
 void relatorioLivrosMaisEmprestados() {
     limpaTela();
     desenhaBorda();
@@ -1509,6 +1510,9 @@ void relatorioLivrosMaisEmprestados() {
     desenhaBorda();
 
     livro lista[1000];
+	// carrega todos os livros do arquivo para um vetor em memória,
+    // pois precisamos ordená-los — e ordenar exige ter todos os dados
+    // disponíveis ao mesmo tempo, não um por vez
     int tam = carregarTodosLivros(lista, 1000);
 
     if (tam == 0) {
@@ -1517,7 +1521,10 @@ void relatorioLivrosMaisEmprestados() {
         return;
     }
 
-    // Bubble sort decrescente por total_emprestimos
+      //a cada passagem pelo vetor, compara pares vizinhos
+    // (lista[j] e lista[j+1]). Se o da esquerda tem menos empréstimos que
+    // o da direita, troca os dois de posição. Repetindo isso várias vezes,
+    // os valores maiores vão "subindo" para o início do vetor
     for (int i = 0; i < tam - 1; i++) {
         for (int j = 0; j < tam - 1 - i; j++) {
             if (lista[j].total_emprestimos < lista[j+1].total_emprestimos) {
@@ -1559,7 +1566,6 @@ void relatorioLivrosMaisEmprestados() {
 
     fclose(arq_rel);
     printf("\n");
-    printf("Relatorio salvo em 'relatorio_mais_emprestados.txt'\n");
 }
 void relatorioUsuariosEmAtraso(usuario lista_usuarios[], int tam_usuarios) {
     limpaTela();
@@ -1647,9 +1653,6 @@ void relatorioUsuariosEmAtraso(usuario lista_usuarios[], int tam_usuarios) {
 
     if (!achou) {
         printf("Nenhum emprestimo em atraso encontrado.\n");
-    } else {
-        printf("\n");
-        printf("Relatorio salvo em 'relatorio_atrasos.txt'\n");
     }
 }
 void relatorioAcervoDisponivel() {
@@ -1722,9 +1725,6 @@ void relatorioAcervoDisponivel() {
     if (!achou) {
         printf("\n");
         printf("Nenhum livro disponivel no momento.\n");
-    } else {
-        printf("\n");
-        printf("Relatorio salvo em 'relatorio_acervo_disponivel.txt'\n");
     }
 }
 void relatorioHistoricoUsuario(usuario lista_usuarios[], int tam_usuarios) {
@@ -1809,7 +1809,8 @@ void relatorioHistoricoUsuario(usuario lista_usuarios[], int tam_usuarios) {
             printf("Data de retirada: %s\n", emp.data_retirada);
             printf("Prazo de devolucao: %s\n", emp.data_prevista);
 
-            // Mostra status e data de devolução real conforme situação
+            // Mostra a data de devolução real e o status só se o livro
+            // já foi devolvido; caso contrário, indica que está pendente
             if (emp.devolvido == 1) {
                 printf("Data de devolucao: %s\n", emp.data_devolucao);
                 printf("Status: DEVOLVIDO\n");
@@ -1842,10 +1843,7 @@ void relatorioHistoricoUsuario(usuario lista_usuarios[], int tam_usuarios) {
     if (!achou) {
         printf("\n");
         printf("Nenhum emprestimo encontrado para este usuario.\n");
-    } else {
-        printf("\n");
-        printf("Relatorio salvo em 'relatorio_historico_usuario.txt'\n");
-    }
+    } 
 }
 int main(){
 setlocale(LC_ALL, "Portuguese");
