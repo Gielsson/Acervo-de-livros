@@ -892,55 +892,31 @@ void SalvarUsuarios(usuario lista_usuarios[], int tam_usuarios) {
 }
 //  permite alterar o nome e o curso de um usuário
 void atualizarUsuario(usuario lista_usuarios[], int tam_usuarios) {
-    limpaTela();
-    desenhaBorda();
-    printf("\n ATUALIZAR DADOS DO USUARIO \n");
-    desenhaBorda();
+    int mat;
+    printf("Digite a matricula do usuario que deseja alterar: ");
+    scanf("%d", &mat);
+    getchar();
 
-    if (tam_usuarios == 0) {
-        printf("\n Nenhum usuario na memoria RAM. Certifique-se de que o arquivo nao esta corrompido.\n");
-        return;
-    }
-
-    int mat_busca;
-    printf("Digite a matricula do usuario que deseja atualizar: ");
-    scanf("%d", &mat_busca);
-    getchar(); 
-
-    int indice = -1; // -1 indica que o usuario ainda nao foi encontrado
- 
-    // busca sequencial no vetor para achar a posicao do usuario
     for (int i = 0; i < tam_usuarios; i++) {
-        if (lista_usuarios[i].matricula == mat_busca) {
-            indice = i;
-            break; // achou, não precisa continuar procurando (matrícula é única)
+        if (lista_usuarios[i].matricula == mat) {
+            printf("Usuario encontrado: %s\n", lista_usuarios[i].nome);
+            printf("Digite o novo nome (ou Enter para manter): ");
+            char entrada[250];
+            fgets(entrada, sizeof(entrada), stdin);
+            entrada[strcspn(entrada, "\n")] = '\0';
+            if (strlen(entrada) > 0) strcpy(lista_usuarios[i].nome, entrada);
+
+            printf("Digite o novo curso (ou Enter para manter): ");
+            fgets(entrada, sizeof(entrada), stdin);
+            entrada[strcspn(entrada, "\n")] = '\0';
+            if (strlen(entrada) > 0) strcpy(lista_usuarios[i].curso, entrada);
+
+            salvarUsuarios(lista_usuarios, tam_usuarios);
+            printf("\nDados atualizados com sucesso!\n");
+            return;
         }
     }
- // se o índice continuar -1, percorremos o vetor inteiro e não achamos
-    if (indice == -1) {
-        printf("\n Matricula %d nao encontrada.\n", mat_busca);
-        return;
-    }
- 
-    // exibe os dados atuais antes de perguntar os novos
-    printf("\n--- Dados Atuais ---\n");
-    printf("Nome: %s\n",  lista_usuarios[indice].nome);
-    printf("Curso: %s\n", lista_usuarios[indice].curso);
-    printf("--------------------\n");
-
-    printf("\nDigite os novos dados:\n");
-    printf("Novo Nome: ");
-    scanf(" %[^\n]", lista_usuarios[indice].nome); // sobrescreve direto no vetor
-    getchar();
-
-    printf("Novo Curso: ");
-    scanf(" %[^\n]", lista_usuarios[indice].curso);
-    getchar();
-
-   // atualiza o arquivo com o vetor modificado
-    SalvarUsuarios(lista_usuarios, tam_usuarios);
-
-    printf("\n Dados atualizados com sucesso!\n");
+    printf("\nUsuario nao encontrado.\n");
 }
 // remove um usuário do sistema, tanto da memória quanto
 // do arquivo, mas so se ele não tiver empréstimos em aberto
@@ -1038,9 +1014,10 @@ void atualizarEstoqueLivro(int codigo, int delta) {
 		//verifica se o livro lido no momento eh o livro alvo para ser modificado
         if (l.codigo == codigo) {
             l.quant_disp =  l.quant_disp + delta;//atualiza a quantidade disponivel somando o delta (+1 se for devolucao, -1 se for emprestimo)
-            if (delta < 0) l.total_emprestimos++; //se o delta for negativo (emprestimo), incrementa o historico do total de emprestimos que esse livro ja teve 
+            if (delta < 0){
+				l.total_emprestimos++; //se o delta for negativo (emprestimo), incrementa o historico do total de emprestimos que esse livro ja teve 
         }
-
+		}
        gravarLivro(temp, l); // usando a função declarada em gerenciamento de livros, a qual da fprintf nos dados do livro
     }
 
@@ -1850,6 +1827,7 @@ setlocale(LC_ALL, "Portuguese");
 
     usuario vetor_usuarios[1000];
     int total_usuarios = 0;
+	//Carrega os dados iniciais dos usuários se existirem
 	LerUsuarios(vetor_usuarios, &total_usuarios);
 
      emprestimo vetor_emprestimos[5000];// Vetor de empréstimos (usado para controlar o próximo ID)
@@ -1857,9 +1835,11 @@ setlocale(LC_ALL, "Portuguese");
 
 	 lerEmprestimos(vetor_emprestimos, &total_emprestimos);
 
-     int opcao, opcao2,opcaoSecundar; // variavel usada para guardar a opção escolhida  pelo usuário do menu
-     
-do{
+     int opcao, opcao2, opcaoSecundar; // variavel usada para guardar a opção escolhida  pelo usuário do menu
+   printf("--- SISTEMA DA BIBLIOTECA INICIALIZADO  COM SUCESSO---\n");
+	printf("Uuarios carregados: %d\n", total_usuarios);
+
+	do{
      limpaTela();
     desenhaBorda();
     printf("\n     ACERVO DE LIVROS   \n");
