@@ -911,7 +911,7 @@ void atualizarUsuario(usuario lista_usuarios[], int tam_usuarios) {
             entrada[strcspn(entrada, "\n")] = '\0';
             if (strlen(entrada) > 0) strcpy(lista_usuarios[i].curso, entrada);
 
-            salvarUsuarios(lista_usuarios, tam_usuarios);
+            SalvarUsuarios(lista_usuarios, tam_usuarios);
             printf("\nDados atualizados com sucesso!\n");
             return;
         }
