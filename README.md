@@ -46,4 +46,4 @@ Certifique-se de ter um compilador C instalado no seu sistema (como o `GCC`).
 ### Passo a Passo
 1. Clone este repositório para a sua máquina:
    ```bash
-   git clone [https://github.com/SEU_USUARIO/Acervo-de-livros.git](https://github.com/SEU_USUARIO/Acervo-de-livros.git)
+   git clone [https://github.com/Gielsson/Acervo-de-livros.git](https://github.com/SEU_USUARIO/Acervo-de-livros.git)
