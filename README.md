@@ -31,7 +31,8 @@ O sistema é dividido em menus aninhados que segmentam as responsabilidades do n
 
 ### 3. Sistema de Transações (Empréstimos e Devoluções)
 * **Regras de Negócio e Restrições:** Validação de estoque disponível antes da liberação do livro e imposição automática do limite máximo de 3 empréstimos simultâneos por usuário.
-* **Submódulo Completo de Relatórios:** * Histórico individual de transações por matrícula.
+* **Submódulo Completo de Relatórios:**
+  * Histórico individual de transações por matrícula.
   * Estatísticas do acervo disponível em tempo real.
   * Relatório de livros mais buscados (métrica de popularidade baseada no histórico).
   * Controle de usuários com pendências ativas.
